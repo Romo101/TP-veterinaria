@@ -15,6 +15,14 @@
 #include<windows.h>
 #include<locale.h> //librearia que me permitira colocar el idioma español
 
+void gotoxy(int x, int y){
+	HANDLE hcon = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD dwPos;
+	dwPos.X = x;
+	dwPos.Y = y;
+	SetConsoleCursorPosition(hcon, dwPos);
+}
+
 struct usuarios{
 	bool veterinario;
 	char usuario[10];
@@ -32,6 +40,7 @@ struct veterinarios{
 void menuadm(int &op);
 void opcionesadm(int op,FILE *&arc,FILE *&vet);
 void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet);
+void lista_veterinarios(FILE *vet,int numero);
 
 main(){
 	setlocale(LC_CTYPE, "spanish"); //me permite usar el alfabeto y los signos del español
@@ -72,7 +81,7 @@ void opcionesadm(int op,FILE *&arc,FILE *&vet){
 			break;
 		case 2: registro_usuario_y_contra(arc,2,vet);
 			break;
-		case 3:	printf("Atencion por vet\n\n");
+		case 3:	lista_veterinarios(vet,0);
 			break;
 		case 4: printf("Ranking\n\n");
 			break;	
@@ -359,5 +368,36 @@ void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet){
 	system("pause");
 	system("color 07");
 	fclose(arc);
+	}
+}
+/*Funcion que muestra la lista de veterinarios con las atenciones que dieron
+si no hay veterinarios registrados en el sistema da aviso de ello*/
+void lista_veterinarios(FILE *vet,int numero){ //numero xd
+	veterinarios vets;
+	int i=3+numero; 		//se manda un numero el cual se suma a un entero que es el numero de la linea
+							//desde la que se debe empezar a imprimir los datos de los veterinarios.
+	vet=fopen("Veterinarios.dat","rb");
+	if(vet==NULL){
+		system("color 0e");
+		printf("\n\n\n\n\t\tNo hay veterinarios registrados en el sistema\n\n\n\t\t");
+		system("pause");	system("cls");
+		system("color 07");
+	}
+	else{
+		printf("-------------------------------------------------------------------------------\n");
+		printf(" Apellido/s y nombres                   Matrícula      DNI          Atenciones\n");
+		printf("-------------------------------------------------------------------------------\n");
+		fread(&vets,sizeof(veterinarios),1,vet);
+		while(!feof(vet)){
+		gotoxy(1,i);  printf("%s",vets.Apellido_y_nombre);
+		gotoxy(40,i); printf("%d",vets.matricula);
+		gotoxy(55,i); printf("%d",vets.dni);
+		gotoxy(68,i); printf("%d",vets.atenciones);
+		i++;
+		fread(&vets,sizeof(veterinarios),1,vet);
+		}
+		fclose(vet);
+		printf("\n\n");
+		system("pause");
 	}
 }
