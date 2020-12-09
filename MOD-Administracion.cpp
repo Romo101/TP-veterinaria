@@ -6,15 +6,21 @@
 #include<locale.h>
 
 struct usuarios{
-	int veterinario,asistente;
+	bool veterinario;
 	char usuario[10];
 	char contrasena[32];
 	char Apellido_y_nombre[60];
 };
+struct veterinarios{
+	char Apellido_y_nombre[60];
+	int matricula;
+	int dni;
+	int telefono;
+};
 
 void menuadm(int &op);
-void opcionesadm(int op,FILE *&arc);
-void registro_usuario_y_contra(FILE *&arc,int op);
+void opcionesadm(int op,FILE *&arc,FILE *&vet);
+void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet);
 
 main(){
 	setlocale(LC_CTYPE, "spanish");
@@ -23,6 +29,7 @@ main(){
 	int intentos=4,opc=0;
 	
 	FILE *arc;
+	FILE *vet;
 	
 	do{								//en este do while valido que la persona que entre al area de administracion
 			if(intentos<4){		//tenga permiso para hacerlo, para eso se definio una clave de administracion
@@ -44,7 +51,7 @@ main(){
 		system("cls");
 		menuadm(opc);			//aqui se muestra el menu y devuelve la opcion elegida
 		if(opc!=5)				
-		opcionesadm(opc,arc);	//si la opcion no es salir se ingresara a esta funcion que registra las distintas opciones
+		opcionesadm(opc,arc,vet);	//si la opcion no es salir se ingresara a esta funcion que registra las distintas opciones
 		}
 	}
 }
@@ -66,11 +73,11 @@ void menuadm(int &op){
 	}while(op!=1 && op!=2 && op!=3 && op!=4 && op!=5);
 }
 /*funcion que registra el trabajo registrado en cada opcion y modifica los distintos archivos por referencia*/
-void opcionesadm(int op,FILE *&arc){
+void opcionesadm(int op,FILE *&arc,FILE *&vet){
 	switch(op){
-		case 1:	registro_usuario_y_contra(arc,1);
+		case 1:	registro_usuario_y_contra(arc,1,vet);
 			break;
-		case 2: registro_usuario_y_contra(arc,2);
+		case 2: registro_usuario_y_contra(arc,2,vet);
 			break;
 		case 3:	printf("Atencion por vet\n\n");
 			break;
@@ -168,8 +175,8 @@ void usuario(char user[],FILE *&arc,char nombre[],char opcion[]){
 }
 /*Funcion que valida una contraseña ingresada y la devuelve a la funcion
 void registro_usuario_y_contra()*/
-void contra(char pas[],char user[],char nombre[],char opcion[]){
-	char aux[32],pass[32];
+void contra(char pass[],char user[],char nombre[],char opcion[]){
+	char aux[32];
 	int i,min,may,num,simbolos,condic,num_consec,letras_consec;
 	
 	do{
@@ -239,10 +246,11 @@ void contra(char pas[],char user[],char nombre[],char opcion[]){
 /*cuando la opcion es registrar usuarios (veterinarios o asistentes)
 De esta funcion se desprenden otras tres "void usuario(),bool repetido() y void contra()
 Funciones que se encuentran mas arriba"*/
-void registro_usuario_y_contra(FILE *&arc,int op){
+void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet){
 	char user[10],password[32],nombre[60],opcion[30];
 	int pasa=0;
 	usuarios users;
+	veterinarios vets;
 	
 	if(op==1)								   // cuando la opcion registrada en el menu sea 1 (registro de veterinarios)
 	strcpy(opcion,"REGISTRO DE VETERINARIOS"); 
@@ -262,15 +270,36 @@ void registro_usuario_y_contra(FILE *&arc,int op){
 	strcpy(users.usuario,user);
 	strcpy(users.contrasena,password);
 	strcpy(users.Apellido_y_nombre,nombre);
+	
+	system("cls");
+		printf("\n\t\t%s\n\n\n\t\tUsuario: %s\n\n",opcion,user);
+		printf("\t\tContraseña: %s",password);
+		printf("\n\n\t\tApellido/s y Nombre/s: %s",nombre);
+	
 	if(op==1){
-		users.veterinario=1;
-		users.asistente=0;
-	}else{
-		users.asistente=1;
-		users.veterinario=0;
+	users.veterinario=true;
+	
+	vet=fopen("Veterinarios.dat","a+b");
+	
+	printf("\n\n\t\tMatricula: ");
+	scanf("%d",&vets.matricula);
+	printf("\n\t\tDNI: ");
+	scanf("%d",&vets.dni);
+	printf("\n\t\tTelefono: ");
+	scanf("%d",&vets.telefono);
+	
+	strcpy(vets.Apellido_y_nombre,nombre);
+	
+	fwrite(&vets,sizeof(veterinarios),1,vet);
+	fclose(vet);
 	}
+	else
+		users.veterinario=false;
+		
 	fwrite(&users,sizeof(usuarios),1,arc);
-	printf("\t\tREGISTRADO\n\n\t\t");
+	system("color 0a");
+	printf("\n\n\t\tREGISTRADO\n\n\t\t");
 	system("pause");
+	system("color 07");
 	fclose(arc);
 }
