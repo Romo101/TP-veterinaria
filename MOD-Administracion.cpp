@@ -41,6 +41,7 @@ void menuadm(int &op);
 void opcionesadm(int op,FILE *&arc,FILE *&vet);
 void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet);
 void lista_veterinarios(FILE *vet,int numero);
+void ordenar_ranking(FILE *&vet);
 
 main(){
 	setlocale(LC_CTYPE, "spanish"); //me permite usar el alfabeto y los signos del español
@@ -83,7 +84,10 @@ void opcionesadm(int op,FILE *&arc,FILE *&vet){
 			break;
 		case 3:	lista_veterinarios(vet,0);
 			break;
-		case 4: printf("Ranking\n\n");
+		case 4: ordenar_ranking(vet);
+		printf("-------------------------------------------------------------------------------\n");
+		printf("                          RANKING DE VETERINARIOS                              \n");
+		lista_veterinarios(vet,2);
 			break;	
 	}
 }
@@ -284,12 +288,12 @@ void registro_veterinarios(FILE *&vet,char nombre[],char user[],char pass[],int 
 	printf("\n\t\tREGISTRO DE VETERINARIOS\n\n\n\t\tUsuario: %s\n\n",user);
 	printf("\t\tContraseña: %s",pass);
 	printf("\n\n\t\tApellido/s y Nombre/s: %s",nombre);
-	printf("\n\n\t\tMatricula: ");
+	printf("\n\n\t\tNúmero de Matrícula: ");
 	scanf("%d",&mat);
 	if(!matricula(vet,mat)){		//se llama a la funcion que comprueba que la matricula ingresada no este registrada ya
 		system("color 0e");			//si esta funcion retorna false
 		printf("\n\n\t\tLa matrícula %d fue registrada anteriormente\n\n",mat);
-		printf("\t\tDebe ingresar una matricula distinta.\n\t\tDe lo contrario se cancelará el registro\n\n");
+		printf("\t\tDebe ingresar una matrícula distinta.\n\t\tDe lo contrario se cancelará el registro\n\n");
 		printf("\t\t¿Ingresar otra matrícula? S/N: ");
 		_flushall();
 		gets(op);
@@ -333,6 +337,13 @@ void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet){
 	printf("\n\n\n\t\tApellido/s y Nombre/s: ");
 	_flushall();
 	gets(nombre);
+	strlwr(nombre);
+	
+	nombre[0]=toupper(nombre[0]);
+	for(int i=0;i<strlen(nombre);i++){		//aqui hago que los nombres y apellidos comienzen con mayusculas
+		if(nombre[i-1]==' ')				//y las demas letras minusculas
+			nombre[i]=toupper(nombre[i]);
+	}
 	
 	usuario(user,arc,nombre,opcion); //se ingresara el usuario, lo validara y lo devolvera por referencia
 	 
@@ -400,4 +411,41 @@ void lista_veterinarios(FILE *vet,int numero){ //numero xd
 		printf("\n\n");
 		system("pause");
 	}
+}
+void ordenar_ranking(FILE *&vet){
+	veterinarios reg,v[50],aux;
+	int i,b,n;
+	
+	vet=fopen("Veterinarios.dat","rb");
+	fread(&reg,sizeof(veterinarios),1,vet);
+	i=0;
+	
+	while(!feof(vet)){
+		v[i]=reg;
+		i++;
+		fread(&reg,sizeof(veterinarios),1,vet);
+	}
+	n=i;
+
+    do{
+        b=0;
+        for (i=0;i<n-1;i++){
+            if (v[i].atenciones<v[i+1].atenciones){
+                aux=v[i];
+                v[i]=v[i+1];
+                v[i+1]=aux;
+                b=1;
+            }
+        }
+    }
+    while (b==1);
+    
+    fclose(vet);
+    vet=fopen("Veterinarios.dat","wb");
+    for (i=0;i<n;i++){     
+       reg=v[i];
+       fwrite(&reg,sizeof(veterinarios),1,vet);           
+    } 
+    
+	fclose(vet);
 }
