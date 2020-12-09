@@ -13,7 +13,7 @@ struct usuarios{
 
 void menuadm(int &op);
 void opcionesadm(int op,FILE *&arc);
-void registro_usuario_y_contra(FILE *&arc);
+void registro_usuario_y_contra(FILE *&arc,int op);
 
 main(){
 	setlocale(LC_CTYPE, "spanish");
@@ -67,9 +67,9 @@ void menuadm(int &op){
 }
 void opcionesadm(int op,FILE *&arc){
 	switch(op){
-		case 1:	registro_usuario_y_contra(arc);
+		case 1:	registro_usuario_y_contra(arc,1);
 			break;
-		case 2: printf("Asistentes\n\n");
+		case 2: registro_usuario_y_contra(arc,2);
 			break;
 		case 3:	printf("Atencion por vet\n\n");
 			break;
@@ -100,7 +100,7 @@ bool repetido(char user[10],FILE *&arc){
 	
 	return false;
 }
-void usuario(char user[10],FILE *&arc){
+void usuario(char user[],FILE *&arc,char nombre[],char opcion[]){
 	int condiciones,may,num,coinc,otros;
 	char conjunto[]= "+-*/?¿¡!";
 	
@@ -109,7 +109,7 @@ void usuario(char user[10],FILE *&arc){
 		system("cls");
 		condiciones=5,may=0,num=0,otros=0;
 		
-	printf("\n\n\n\t\tINGRESE UN NOMBRE DE USUARIO: ");
+	printf("\n\t\t%s\n\n\n\t\tApellido/s y Nombre/s: %s\n\n\t\tINGRESE UN NOMBRE DE USUARIO: ",opcion,nombre);
 	_flushall();
 	gets(user);
 	printf("\n");
@@ -158,7 +158,7 @@ void usuario(char user[10],FILE *&arc){
 	}while(repetido(user,arc));
 	
 }
-void contra(char pas[]){
+void contra(char pas[],char user[],char nombre[],char opcion[]){
 	char aux[32],pass[32];
 	int i,min,may,num,simbolos,condic,num_consec,letras_consec;
 	
@@ -166,7 +166,7 @@ void contra(char pas[]){
 		system("cls");
 		condic=5,min=0,may=0,num=0,simbolos=0,num_consec=0,letras_consec=0;
 		
-		printf("\n\n\n\t\tINGRESE UNA CONTRASEÑA: ");
+		printf("\n\t\t%s\n\n\n\t\tApellido/s y Nombre/s: %s\n\n\t\tUSUARIO: %s\n\n\t\tESTABLEZCA UNA CONTRASEÑA: ",opcion,nombre,user);
 		_flushall();
 		gets(pass);
 		strlwr(strcpy(aux,pass));
@@ -226,42 +226,43 @@ void contra(char pas[]){
 		}
 	}while(condic<5);
 	
-	system("color 0a");
+	/*system("color 0a");
 	printf("\t\tCONTRASEÑA VALIDA\n\n\t\t");
 	system("pause");	system("cls");
-	system("color 07");	
+	system("color 07");*/	
 }
-void registro_usuario_y_contra(FILE *&arc){
-	char user[10],password[32],nombre[30];
-	
+void registro_usuario_y_contra(FILE *&arc,int op){
+	char user[10],password[32],nombre[60],opcion[30];
+	int pasa=0;
 	usuarios users;
 	
-	printf("\n\n\t\t\tCREACIÓN DE USUARIO\n\n\t\tCondiciones de usuarios válidos:\n\n");
+	if(op==1)
+	strcpy(opcion,"REGISTRO DE VETERINARIOS");
+	else
+	strcpy(opcion,"REGISTRO DE ASISTENTES");
+	
+	printf("\n\t\t%s",opcion);
+	printf("\n\n\n\t\tApellido/s y Nombre/s: ");
+	_flushall();
+	gets(nombre);
+	/*printf("\n\n\t\t\tCREACIÓN DE USUARIO\n\n\t\tCondiciones de usuarios válidos:\n\n");
 	printf("\t\t. Que no esté en uso\n\t\t. Comenzar con minúsculas\n\t\t. Tener al menos dos letras mayúsculas\n");
 	printf("\t\t. Tener como máximo tres numeros\n\t\t. Entre seis y diez carácteres\n");
 	printf("\t\t. Admitirá los simbolos del conjunto: {+,-,*,/,¿,?,¡,!}\n\n\t\t");
-	system("pause");
-	
-	usuario(user,arc);
-	system("color 0a");
+	system("pause");*/
+	usuario(user,arc,nombre,opcion);
+	/*system("color 0a");
 	printf("\t\tUsuario válido\n\n\t\t");
 	system("pause");	system("cls");
-	system("color 07");
-	
-	printf("\n\t\t\tCREACIÓN DE CONTRASEÑAS\n\n\tCondiciones de contraseñas válidas:\n\n");
+	system("color 07");*/
+	/*printf("\n\t\t\tCREACIÓN DE CONTRASEÑAS\n\n\tCondiciones de contraseñas válidas:\n\n");
 	printf("\t. Tener al menos una letra máyuscula, una minúscula y un número\n");
 	printf("\t. No contener símbolos, acentos ni espacios\n\t. Tener entre 6 y 32 carácteres\n");
 	printf("\t. No tener más de tres números consecutivos\n\t. No tener 2 letras seguidas y en órden alfabético\n\n\t");
-	system("pause");
-	
-	contra(password);
-	/*_flushall();
-	gets(pass);
-	printf("Y un nombre");
-	_flushall();
-	gets(nombre);
-	
-	arc=fopen("usuarios.dat","a+b");
+	system("pause");*/
+	contra(password,user,nombre,opcion);
+
+	/*arc=fopen("usuarios.dat","a+b");
 	strcpy(users.usuario,user);
 	strcpy(users.contrasena,pass);
 	strcpy(users.Apellido_y_nombre,nombre);
