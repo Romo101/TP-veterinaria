@@ -26,6 +26,7 @@ struct veterinarios{
 	int matricula;
 	int dni;
 	int telefono;
+	int atenciones;
 };
 
 void menuadm(int &op);
@@ -128,49 +129,51 @@ bool repetido(char user[10],FILE *&arc){
 bool repetido()*/
 void usuario(char user[],FILE *&arc,char nombre[],char opcion[]){
 	int condiciones,may,num,coinc,otros;
-	char conjunto[]= "+-*/?¿¡!";
+	char conjunto[]= "+-*/?¿¡!";  //conjunto de simbolos permitidos
 	
-	do{
+	do{ //dos ciclos do while
 	do{
 		system("cls");
-		condiciones=5,may=0,num=0,otros=0;
-		
+		condiciones=5,may=0,num=0,otros=0;  //las condiciones son 5, luego los contadores de las 
+											//mayusculas, minusculas y numeros empiezan en 0
 	printf("\n\t\t%s\n\n\n\t\tApellido/s y Nombre/s: %s\n\n\t\tINGRESE UN NOMBRE DE USUARIO: ",opcion,nombre);
 	_flushall();
 	gets(user);
 	printf("\n");
-	if(strlen(user)<6 or strlen(user)>10){
+	if(strlen(user)<6 or strlen(user)>10){						//aqui se compara el tamaño del usuario con las condiciones
 		printf("\tX Debe tener entre seis y diez caracteres\n");
-		condiciones--;
+		condiciones--;										//si no se cumplen se resta en uno las condiciones
 	}
-	if(user[0]<'a' or user[0]>'z'){
+	if(user[0]<'a' or user[0]>'z'){                        //se comprueba que la primera letra sea minuscula
 		printf("\tX La primera letra debe ser minúscula\n");
 		condiciones--;
 	}
-	for(int i=0;i<strlen(user);i++){
-		if(user[i]>='A' and user[i]<='Z')
+	for(int i=0;i<strlen(user);i++){ 			//aqui se comprueba la cantidad de mayusculas, numeros y si hay simbolos no permitidos
+		if(user[i]>='A' and user[i]<='Z')	//cuenta mayusculas
 			may++;
-		if(isdigit(user[i]))
+		if(isdigit(user[i]))		//cuenta numeros con la funcion que comprueba que un caracter es numero
 			num++;
-		if(!isdigit(user[i]) && !isalpha(user[i]) && otros==0){
+		if(!isdigit(user[i]) && !isalpha(user[i]) && otros==0){ //si el caracter es simbolo se comprobara si es permitido
+																//si ya se entro anteriormente en este ciclo y se encontro caracter no valido
+																//entonces no entrara (por cada contraseña invalida)
 			coinc=0;
-			for(int j=0;j<strlen(conjunto);j++){
-				if(user[i]==conjunto[j])
-				coinc++;
-				if(j==strlen(conjunto)-1 and coinc==0)
-				otros++;
-			}
+			for(int j=0;j<strlen(conjunto);j++){  //se comprueba cada simbolo con el conjunto permitido
+				if(user[i]==conjunto[j])			//si el simbolo comparado se encuentra en el conjunto
+				coinc++;										//se aumenta un contador de simbolos permitidos
+				if(j==strlen(conjunto)-1 and coinc==0)	//si ya se comparo el simbolo con todos los simbolos del conjunto y no coincidio con ninguno permitido
+				otros++;								//se aumentara un contador que determina si la palabra tiene simbolos no permitidos
+			}											//una vez encontrado uno no permitido ya no se comparara los demas caracterses
 		}
 	}
-	if(may<2){
+	if(may<2){		//si no hay al menos dos mayusculas
 		printf("\tX Debe tener al menos dos letras mayúsculas\n");
 		condiciones--;
 	}
-	if(num>3){
+	if(num>3){ //si hay mas de tres numeros
 		printf("\tX Debe tener como máximo tres números\n");
 		condiciones--;
 	}
-	if(otros>0){
+	if(otros>0){ //si se encontro caracteres simbolos no validos
 		printf("\tX Solo se admite los simbolos del conjunto {+,-,*,/,?,¿,¡,!}\n");
 		condiciones--;
 	}
@@ -180,8 +183,9 @@ void usuario(char user[],FILE *&arc,char nombre[],char opcion[]){
 		system("pause");
 		system("color 07");
 		}
-	}while(condiciones<5);
-	}while(repetido(user,arc));	
+	}while(condiciones<5);   //cuando no se cumple con los cincos requisitos se repite
+	}while(repetido(user,arc));	//una vez cumplido los cinco requisitos se compara el usuario con
+				//los usuarios ya registrados para comprobar que no se repitan si lo hacen se vuelve a ingresar otro usuario
 }
 /*Funcion que valida una contraseña ingresada y la devuelve a la funcion
 void registro_usuario_y_contra()*/
@@ -253,29 +257,34 @@ void contra(char pass[],char user[],char nombre[],char opcion[]){
 		}
 	}while(condic<5);	
 }
+/*funcion que valida las matriculas ingresadas en la funcion
+"void registro_veterinarios()"*/
 bool matricula(FILE *vet,int mat){
-	vet=fopen("Veterinarios.dat","rb");
+	vet=fopen("Veterinarios.dat","rb"); 	//se abre el archivo de veterinarios con permiso de lectura
 	veterinarios vete;
 	
-	if(vet==NULL)
-		return true;
+	if(vet==NULL)						//si el archivo aun no existe entonces la matricula ingresada
+		return true;					//se valida
 	else{
-		fread(&vete,sizeof(veterinarios),1,vet);
+		fread(&vete,sizeof(veterinarios),1,vet);	//cuando el archivo exite se lee el primer registro
 		while(!feof(vet)){
-			if(mat==vete.matricula){
-				fclose(vet);
+			if(mat==vete.matricula){				//se lo compara con la matricula ingresada si son iguales
+				fclose(vet);						//la matricula no sera valida
 				return false;
 			}
-		fread(&vete,sizeof(veterinarios),1,vet);	
+		fread(&vete,sizeof(veterinarios),1,vet);	//si la matricula no se encuentra se lee el siguiente registro del archivo
 		}
 			fclose(vet);
-			return true;
+			return true;		//una vez leido el archivo completo y no encontrada la matricula ingresada entonces se valida
 	}
 }
-
+/*En esta funcion se registran los datos de los veterinarios luego de validar usuario
+y contraseña, tambien se validan las matriculas viendo que no se registren dos matriculas
+iguales para eso se desprende una funcion "bool matricula()" en caso de encontrar la matricula
+se dara la opcion de cancelar ingreso de datos como la de volver a ingresar otra matricula*/
 void registro_veterinarios(FILE *&vet,char nombre[],char user[],char pass[],int &opc){
 	veterinarios vets;
-	char op[3];
+	char op[3];			//este guardara la opcion ingresada cuando la matricula se repita
 	int mat;
 	
 	regresar:
@@ -285,37 +294,38 @@ void registro_veterinarios(FILE *&vet,char nombre[],char user[],char pass[],int 
 	printf("\n\n\t\tApellido/s y Nombre/s: %s",nombre);
 	printf("\n\n\t\tMatricula: ");
 	scanf("%d",&mat);
-	if(!matricula(vet,mat)){
-			system("color 0e");
+	if(!matricula(vet,mat)){		//se llama a la funcion que comprueba que la matricula ingresada no este registrada ya
+		system("color 0e");			//si esta funcion retorna false
 		printf("\n\n\t\tLa matrícula %d fue registrada anteriormente\n\n",mat);
 		printf("\t\tDebe ingresar una matricula distinta.\n\t\tDe lo contrario se cancelará el registro\n\n");
 		printf("\t\t¿Ingresar otra matrícula? S/N: ");
 		_flushall();
 		gets(op);
 		system("color 07");
-		if(strcmp(op,"s")==0 or strcmp(op,"S")==0)
-			goto regresar;
+		if(strcmp(op,"s")==0 or strcmp(op,"S")==0) //si se elige volver a ingresar la matricula se volvera al principio de
+			goto regresar;						  //la sentencia goto
 		else{
 			printf("\n\n\t\tREGISTRO CANCELADO\n\n\t\t");
 			system("pause");
-			opc=0;
+			opc=0;								//sino se cambiara la opcion y no se registrara el veterinario
 		}
-	}else{
+	}else{                 //si la funcion matricula retorna true (la matricula es valida)
 	printf("\n\t\tDNI: ");
 	scanf("%d",&vets.dni);
 	printf("\n\t\tTelefono: ");
 	scanf("%d",&vets.telefono);
 	strcpy(vets.Apellido_y_nombre,nombre);
 	vets.matricula=mat;
+	vets.atenciones=0;
 	
-	vet=fopen("Veterinarios.dat","a+b");
-	fwrite(&vets,sizeof(veterinarios),1,vet);
+	vet=fopen("Veterinarios.dat","a+b");		//se abre el archivo con permisos de lectura y escritura y conservacion de datos
+	fwrite(&vets,sizeof(veterinarios),1,vet);	//se guardara los datos del veterinario en el archivo de veterinarios
 	fclose(vet);
 	}
 }
 /*cuando la opcion es registrar usuarios (veterinarios o asistentes)
-De esta funcion se desprenden otras tres "void usuario(),bool repetido() y void contra()
-Funciones que se encuentran mas arriba"*/
+De esta funcion se desprenden otras tres "void usuario(), void contra()
+y void registro_veterinarios()" Funciones que se encuentran mas arriba"*/
 void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet){
 	char user[10],password[32],nombre[60],opcion[30];
 	int pasa=0;
@@ -335,25 +345,31 @@ void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet){
 	usuario(user,arc,nombre,opcion); //se ingresara el usuario, lo validara y lo devolvera por referencia
 	 
 	contra(password,user,nombre,opcion); //se ingresa la contraseña, se la valida y se la devuelve a esta funcion
-
-	arc=fopen("usuarios.dat","a+b");
-	strcpy(users.usuario,user);
-	strcpy(users.contrasena,password);
-	strcpy(users.Apellido_y_nombre,nombre);
 	
-	if(op==1){
-	users.veterinario=true;
+	
+	/*si la opcion ingresada en el menu fue registrar veterinarios*/
+	if(op==1){								//se casigna un campo booleano del registro de usuarios, este campo
+	users.veterinario=true;					//define si el usuario es veterinario (true) o asistente(false)
+	/*funcion que registra y valida los datos de los veterinarios
+	en caso de ingresarse una matricula repetida y querer cancelar
+	el ingreso de datos de los veterinarios esta funcion cambiara
+	el valor de la opcion a 0 y no se registrara el usuario ni los
+	datos del veterinario*/
 	registro_veterinarios(vet,nombre,user,password,op);
 	}
-	else{
+	else{//si el usuario es asistente --> veterinario=false
 		users.veterinario=false;
 		system("cls");
-		printf("\n\t\t%s\n\n\n\t\tUsuario: %s\n\n",opcion,user);
+		printf("\n\t\t%s\n\n\n\t\tUsuario: %s\n\n",opcion,user);	//se muestran los datos de usuario ordenados
 		printf("\t\tContraseña: %s",password);
 		printf("\n\n\t\tApellido/s y Nombre/s: %s",nombre);
 	}
 	
-	if(op==1 or op==2){
+	if(op==1 or op==2){					//si la opcion 1 no cambio en la funcion registro_veterinarios o la opcion
+	arc=fopen("usuarios.dat","a+b");	//es ingresar asistentes se registraran los datos de usuario ingresados
+	strcpy(users.usuario,user);
+	strcpy(users.contrasena,password);
+	strcpy(users.Apellido_y_nombre,nombre);
 	fwrite(&users,sizeof(usuarios),1,arc);
 	system("color 0a");
 	printf("\n\n\t\tREGISTRADO\n\n\t\t");
