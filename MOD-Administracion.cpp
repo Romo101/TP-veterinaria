@@ -6,6 +6,7 @@
 #include<locale.h>
 
 struct usuarios{
+	int veterinario,asistente;
 	char usuario[10];
 	char contrasena[32];
 	char Apellido_y_nombre[60];
@@ -17,14 +18,14 @@ void registro_usuario_y_contra(FILE *&arc,int op);
 
 main(){
 	setlocale(LC_CTYPE, "spanish");
-	char claveadministracion[]="VETeriAR012";
+	char claveadministracion[]="VETeriAR012";	//clave
 	char intentoclave[30];
 	int intentos=4,opc=0;
 	
 	FILE *arc;
 	
 	do{								//en este do while valido que la persona que entre al area de administracion
-			if(intentos<4){		//tenga permiso para hacerlo
+			if(intentos<4){		//tenga permiso para hacerlo, para eso se definio una clave de administracion
 			printf("\n\t\tClave incorrecta\n\n\t\t");
 			system("pause"); system("cls");
 			printf("\n\t\tTiene %d intentos\n",intentos);
@@ -34,21 +35,20 @@ main(){
 		_flushall();
 		gets(intentoclave);
 		intentos--;
-	}while(strcmp(intentoclave,claveadministracion)!=0 && intentos>0);
+	}while(strcmp(intentoclave,claveadministracion)!=0 && intentos>0); //se tendra cuatro intentos para ingresar la clave de administracion
 	
 	if(intentos==0)
-		printf("\n\t\tClave incorrecta, contáctese con el administrador\n\n\t\t");
+		printf("\n\t\tClave incorrecta, contáctese con el administrador\n\n\t\t"); //si la clave no fue ingresada se saldra del modulo de administracion
 	else{
-		while(opc!=5){
+		while(opc!=5){ 			//caso contrario se accedera al menu de administracion, (0p=5 saldra del modulo de administracion)
 		system("cls");
-		menuadm(opc);
-		if(opc!=5)
-		opcionesadm(opc,arc);
+		menuadm(opc);			//aqui se muestra el menu y devuelve la opcion elegida
+		if(opc!=5)				
+		opcionesadm(opc,arc);	//si la opcion no es salir se ingresara a esta funcion que registra las distintas opciones
 		}
 	}
-	
-	system("pause");
 }
+/*funcion sin tipo que muestra el menu y devuelve una opcion por referencia*/
 void menuadm(int &op){
 	do{
 		op=0;
@@ -65,6 +65,7 @@ void menuadm(int &op){
 	system("cls");
 	}while(op!=1 && op!=2 && op!=3 && op!=4 && op!=5);
 }
+/*funcion que registra el trabajo registrado en cada opcion y modifica los distintos archivos por referencia*/
 void opcionesadm(int op,FILE *&arc){
 	switch(op){
 		case 1:	registro_usuario_y_contra(arc,1);
@@ -77,14 +78,19 @@ void opcionesadm(int op,FILE *&arc){
 			break;	
 	}
 }
+/*Funcion que devuelve true o false a la funcion "void usuario()" 
+aqui se valida que el usuario ingresado y validado no se encuentre
+en uso*/
 bool repetido(char user[10],FILE *&arc){
 	usuarios users;
 	
-	arc=fopen("usuarios.dat","a+b");
-	rewind(arc);
+	arc=fopen("usuarios.dat","a+b");	//abro el archivo usuario, si no existe lo creo
+	rewind(arc);						//pongo el puntero al principio
 	
-	fread(&users,sizeof(usuarios),1,arc);
-	while(!feof(arc)){
+	fread(&users,sizeof(usuarios),1,arc); //leo el primer registro del archivo
+	while(!feof(arc)){								//si no es el fin del archivo
+	
+	/*se comprueba si el usuario no esta ya registrado en el archivo*/
 		if(strcmp(user,users.usuario)==0){
 		printf("\n");
 		system("color 0c");
@@ -92,14 +98,17 @@ bool repetido(char user[10],FILE *&arc){
 		system("pause");
 		system("color 07");
 		fclose(arc);
-		return true;
+		return true;		//si esta retorno "true".
 		}
 		fread(&users,sizeof(usuarios),1,arc);
 	}
 	fclose(arc);
 	
-	return false;
+	return false;	//si no esta retorno "false"
 }
+/*funcion que registra los ususarios, los valida y los devuelve a la funcion
+"void registro_usuario_y_contra()". De esta funcion se desprende la funcion
+bool repetido()*/
 void usuario(char user[],FILE *&arc,char nombre[],char opcion[]){
 	int condiciones,may,num,coinc,otros;
 	char conjunto[]= "+-*/?¿¡!";
@@ -155,9 +164,10 @@ void usuario(char user[],FILE *&arc,char nombre[],char opcion[]){
 		system("color 07");
 		}
 	}while(condiciones<5);
-	}while(repetido(user,arc));
-	
+	}while(repetido(user,arc));	
 }
+/*Funcion que valida una contraseña ingresada y la devuelve a la funcion
+void registro_usuario_y_contra()*/
 void contra(char pas[],char user[],char nombre[],char opcion[]){
 	char aux[32],pass[32];
 	int i,min,may,num,simbolos,condic,num_consec,letras_consec;
@@ -224,57 +234,43 @@ void contra(char pas[],char user[],char nombre[],char opcion[]){
 			system("pause");
 			system("color 07");
 		}
-	}while(condic<5);
-	
-	/*system("color 0a");
-	printf("\t\tCONTRASEÑA VALIDA\n\n\t\t");
-	system("pause");	system("cls");
-	system("color 07");*/	
+	}while(condic<5);	
 }
+/*cuando la opcion es registrar usuarios (veterinarios o asistentes)
+De esta funcion se desprenden otras tres "void usuario(),bool repetido() y void contra()
+Funciones que se encuentran mas arriba"*/
 void registro_usuario_y_contra(FILE *&arc,int op){
 	char user[10],password[32],nombre[60],opcion[30];
 	int pasa=0;
 	usuarios users;
 	
-	if(op==1)
-	strcpy(opcion,"REGISTRO DE VETERINARIOS");
-	else
+	if(op==1)								   // cuando la opcion registrada en el menu sea 1 (registro de veterinarios)
+	strcpy(opcion,"REGISTRO DE VETERINARIOS"); 
+	else									   // cuando la opcion registrada en el menu sea 2 (registro de asistentes)
 	strcpy(opcion,"REGISTRO DE ASISTENTES");
 	
 	printf("\n\t\t%s",opcion);
 	printf("\n\n\n\t\tApellido/s y Nombre/s: ");
 	_flushall();
 	gets(nombre);
-	/*printf("\n\n\t\t\tCREACIÓN DE USUARIO\n\n\t\tCondiciones de usuarios válidos:\n\n");
-	printf("\t\t. Que no esté en uso\n\t\t. Comenzar con minúsculas\n\t\t. Tener al menos dos letras mayúsculas\n");
-	printf("\t\t. Tener como máximo tres numeros\n\t\t. Entre seis y diez carácteres\n");
-	printf("\t\t. Admitirá los simbolos del conjunto: {+,-,*,/,¿,?,¡,!}\n\n\t\t");
-	system("pause");*/
-	usuario(user,arc,nombre,opcion);
-	/*system("color 0a");
-	printf("\t\tUsuario válido\n\n\t\t");
-	system("pause");	system("cls");
-	system("color 07");*/
-	/*printf("\n\t\t\tCREACIÓN DE CONTRASEÑAS\n\n\tCondiciones de contraseñas válidas:\n\n");
-	printf("\t. Tener al menos una letra máyuscula, una minúscula y un número\n");
-	printf("\t. No contener símbolos, acentos ni espacios\n\t. Tener entre 6 y 32 carácteres\n");
-	printf("\t. No tener más de tres números consecutivos\n\t. No tener 2 letras seguidas y en órden alfabético\n\n\t");
-	system("pause");*/
-	contra(password,user,nombre,opcion);
+	
+	usuario(user,arc,nombre,opcion); //se ingresara el usuario, lo validara y lo devolvera por referencia
+	 
+	contra(password,user,nombre,opcion); //se ingresa la contraseña, se la valida y se la devuelve a esta funcion
 
-	/*arc=fopen("usuarios.dat","a+b");
+	arc=fopen("usuarios.dat","a+b");
 	strcpy(users.usuario,user);
-	strcpy(users.contrasena,pass);
+	strcpy(users.contrasena,password);
 	strcpy(users.Apellido_y_nombre,nombre);
+	if(op==1){
+		users.veterinario=1;
+		users.asistente=0;
+	}else{
+		users.asistente=1;
+		users.veterinario=0;
+	}
 	fwrite(&users,sizeof(usuarios),1,arc);
-	printf("REGISTRADO");
-	fclose(arc);*/
-}
-/*
-arc=fopen("usuarios.dat","a+b");
-	fwrite(&users,sizeof(usuarios),1,arc);
-	system("color 0a");
-	printf("\tUsuario '%s' registrado correctamente\n\n",user);
+	printf("\t\tREGISTRADO\n\n\t\t");
 	system("pause");
-	system("color 07");
-*/
+	fclose(arc);
+}
