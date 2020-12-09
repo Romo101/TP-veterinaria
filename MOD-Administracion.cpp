@@ -1,9 +1,19 @@
+/*
+	TRABAJO INTEGRADOR 2DO CUATRIMESTRE
+	
+	MODULO DE ADMINISTRACION DE VETERINARIA
+	
+	ALUMNO: ROMO J. JONATHAN EMANUEL
+	COMISION: 1K05
+	DNI: 41374521
+*/
+
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
 #include<ctype.h>
 #include<windows.h>
-#include<locale.h>
+#include<locale.h> //librearia que me permitira colocar el idioma español
 
 struct usuarios{
 	bool veterinario;
@@ -243,6 +253,66 @@ void contra(char pass[],char user[],char nombre[],char opcion[]){
 		}
 	}while(condic<5);	
 }
+bool matricula(FILE *vet,int mat){
+	vet=fopen("Veterinarios.dat","rb");
+	veterinarios vete;
+	
+	if(vet==NULL)
+		return true;
+	else{
+		fread(&vete,sizeof(veterinarios),1,vet);
+		while(!feof(vet)){
+			if(mat==vete.matricula){
+				fclose(vet);
+				return false;
+			}
+		fread(&vete,sizeof(veterinarios),1,vet);	
+		}
+			fclose(vet);
+			return true;
+	}
+}
+
+void registro_veterinarios(FILE *&vet,char nombre[],char user[],char pass[],int &opc){
+	veterinarios vets;
+	char op[3];
+	int mat;
+	
+	regresar:
+	system("cls");
+	printf("\n\t\tREGISTRO DE VETERINARIOS\n\n\n\t\tUsuario: %s\n\n",user);
+	printf("\t\tContraseña: %s",pass);
+	printf("\n\n\t\tApellido/s y Nombre/s: %s",nombre);
+	printf("\n\n\t\tMatricula: ");
+	scanf("%d",&mat);
+	if(!matricula(vet,mat)){
+			system("color 0e");
+		printf("\n\n\t\tLa matrícula %d fue registrada anteriormente\n\n",mat);
+		printf("\t\tDebe ingresar una matricula distinta.\n\t\tDe lo contrario se cancelará el registro\n\n");
+		printf("\t\t¿Ingresar otra matrícula? S/N: ");
+		_flushall();
+		gets(op);
+		system("color 07");
+		if(strcmp(op,"s")==0 or strcmp(op,"S")==0)
+			goto regresar;
+		else{
+			printf("\n\n\t\tREGISTRO CANCELADO\n\n\t\t");
+			system("pause");
+			opc=0;
+		}
+	}else{
+	printf("\n\t\tDNI: ");
+	scanf("%d",&vets.dni);
+	printf("\n\t\tTelefono: ");
+	scanf("%d",&vets.telefono);
+	strcpy(vets.Apellido_y_nombre,nombre);
+	vets.matricula=mat;
+	
+	vet=fopen("Veterinarios.dat","a+b");
+	fwrite(&vets,sizeof(veterinarios),1,vet);
+	fclose(vet);
+	}
+}
 /*cuando la opcion es registrar usuarios (veterinarios o asistentes)
 De esta funcion se desprenden otras tres "void usuario(),bool repetido() y void contra()
 Funciones que se encuentran mas arriba"*/
@@ -271,35 +341,24 @@ void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet){
 	strcpy(users.contrasena,password);
 	strcpy(users.Apellido_y_nombre,nombre);
 	
-	system("cls");
+	if(op==1){
+	users.veterinario=true;
+	registro_veterinarios(vet,nombre,user,password,op);
+	}
+	else{
+		users.veterinario=false;
+		system("cls");
 		printf("\n\t\t%s\n\n\n\t\tUsuario: %s\n\n",opcion,user);
 		printf("\t\tContraseña: %s",password);
 		printf("\n\n\t\tApellido/s y Nombre/s: %s",nombre);
-	
-	if(op==1){
-	users.veterinario=true;
-	
-	vet=fopen("Veterinarios.dat","a+b");
-	
-	printf("\n\n\t\tMatricula: ");
-	scanf("%d",&vets.matricula);
-	printf("\n\t\tDNI: ");
-	scanf("%d",&vets.dni);
-	printf("\n\t\tTelefono: ");
-	scanf("%d",&vets.telefono);
-	
-	strcpy(vets.Apellido_y_nombre,nombre);
-	
-	fwrite(&vets,sizeof(veterinarios),1,vet);
-	fclose(vet);
 	}
-	else
-		users.veterinario=false;
-		
+	
+	if(op==1 or op==2){
 	fwrite(&users,sizeof(usuarios),1,arc);
 	system("color 0a");
 	printf("\n\n\t\tREGISTRADO\n\n\t\t");
 	system("pause");
 	system("color 07");
 	fclose(arc);
+	}
 }
