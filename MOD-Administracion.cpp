@@ -34,37 +34,19 @@ void opcionesadm(int op,FILE *&arc,FILE *&vet);
 void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet);
 
 main(){
-	setlocale(LC_CTYPE, "spanish");
-	char claveadministracion[]="VETeriAR012";	//clave
-	char intentoclave[30];
+	setlocale(LC_CTYPE, "spanish"); //me permite usar el alfabeto y los signos del español
 	int intentos=4,opc=0;
-	
-	FILE *arc;
-	FILE *vet;
-	
-	do{								//en este do while valido que la persona que entre al area de administracion
-			if(intentos<4){		//tenga permiso para hacerlo, para eso se definio una clave de administracion
-			printf("\n\t\tClave incorrecta\n\n\t\t");
-			system("pause"); system("cls");
-			printf("\n\t\tTiene %d intentos\n",intentos);
-			}
-			
-			printf("\n\t\tIngrese clave de administración: ");
-		_flushall();
-		gets(intentoclave);
-		intentos--;
-	}while(strcmp(intentoclave,claveadministracion)!=0 && intentos>0); //se tendra cuatro intentos para ingresar la clave de administracion
-	
-	if(intentos==0)
-		printf("\n\t\tClave incorrecta, contáctese con el administrador\n\n\t\t"); //si la clave no fue ingresada se saldra del modulo de administracion
-	else{
-		while(opc!=5){ 			//caso contrario se accedera al menu de administracion, (0p=5 saldra del modulo de administracion)
+	/*A los archivos se los declaro de esta manera y se los pasa a las funciones por referencia
+	con fin de que el codigo sea un poco mas legible*/
+	FILE *arc; //archivo que se usara para los usuarios
+	FILE *vet; //para veterinarios
+
+		while(opc!=5){ 		//(0p=5 saldra del modulo de administracion)
 		system("cls");
 		menuadm(opc);			//aqui se muestra el menu y devuelve la opcion elegida
 		if(opc!=5)				
 		opcionesadm(opc,arc,vet);	//si la opcion no es salir se ingresara a esta funcion que registra las distintas opciones
 		}
-	}
 }
 /*funcion sin tipo que muestra el menu y devuelve una opcion por referencia*/
 void menuadm(int &op){
@@ -101,18 +83,19 @@ aqui se valida que el usuario ingresado y validado no se encuentre
 en uso*/
 bool repetido(char user[10],FILE *&arc){
 	usuarios users;
+	arc=fopen("usuarios.dat","rb");	//abro el archivo usuario para leerlo
 	
-	arc=fopen("usuarios.dat","a+b");	//abro el archivo usuario, si no existe lo creo
-	rewind(arc);						//pongo el puntero al principio
-	
+	if(arc==NULL)
+	return false;      //si el archivo no existe entonces el usuario no podria repetirse asi que retorno false
+	else{
 	fread(&users,sizeof(usuarios),1,arc); //leo el primer registro del archivo
 	while(!feof(arc)){								//si no es el fin del archivo
 	
-	/*se comprueba si el usuario no esta ya registrado en el archivo*/
+	/*se comprueba si el usuario esta ya registrado en el archivo*/
 		if(strcmp(user,users.usuario)==0){
 		printf("\n");
-		system("color 0c");
-		printf("\tX El '%s' usuario no está disponible ingrese uno nuevo\n\t",user);
+		system("color 0e");
+		printf("\tX El  usuario '%s' no está disponible ingrese uno nuevo\n\n\t",user);
 		system("pause");
 		system("color 07");
 		fclose(arc);
@@ -121,8 +104,8 @@ bool repetido(char user[10],FILE *&arc){
 		fread(&users,sizeof(usuarios),1,arc);
 	}
 	fclose(arc);
-	
 	return false;	//si no esta retorno "false"
+	}
 }
 /*funcion que registra los ususarios, los valida y los devuelve a la funcion
 "void registro_usuario_y_contra()". De esta funcion se desprende la funcion
