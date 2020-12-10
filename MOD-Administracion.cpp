@@ -63,7 +63,7 @@ void menuadm(int &op){
 	do{
 		op=0;
 		_flushall();
-	printf("\n\n\t\t\t   MÓDULO ADMINISTRACIÓN\n");
+	printf("\n\n\n\t\t\t   MÓDULO ADMINISTRACIÓN\n");
 	printf("\t\t\t===========================\n\n");
 	printf("\t\t\t1.- Registrar veterinario\n\n");
 	printf("\t\t\t2.- Registrar asistente\n\n");
@@ -108,8 +108,9 @@ bool repetido(char user[10],FILE *&arc){
 		if(strcmp(user,users.usuario)==0){
 		printf("\n");
 		system("color 0e");
+		Beep(700,300);
 		printf("\tX El  usuario '%s' no está disponible ingrese uno nuevo\n\n\t",user);
-		system("pause");
+		system("pause ->NUL");
 		system("color 07");
 		fclose(arc);
 		return true;		//si esta retorno "true".
@@ -174,9 +175,10 @@ void usuario(char user[],FILE *&arc,char nombre[],char opcion[]){
 		condiciones--;
 	}
 	if(condiciones<5){
-		printf("\n\t");
 		system("color 0e");
-		system("pause");
+		Beep(700,300);
+		printf("\n\t");
+		system("pause ->NUL");
 		system("color 07");
 		}
 	}while(condiciones<5);   //cuando no se cumple con los cincos requisitos se repite
@@ -248,7 +250,8 @@ void contra(char pass[],char user[],char nombre[],char opcion[]){
 		if(condic<5){
 			printf("\n\t");
 			system("color 0e");
-			system("pause");
+			Beep(700,300);
+			system("pause ->NUL");
 			system("color 07");
 		}
 	}while(condic<5);	
@@ -292,6 +295,7 @@ void registro_veterinarios(FILE *&vet,char nombre[],char user[],char pass[],int 
 	scanf("%d",&mat);
 	if(!matricula(vet,mat)){		//se llama a la funcion que comprueba que la matricula ingresada no este registrada ya
 		system("color 0e");			//si esta funcion retorna false
+		Beep(700,300);
 		printf("\n\n\t\tLa matrícula %d fue registrada anteriormente\n\n",mat);
 		printf("\t\tDebe ingresar una matrícula distinta.\n\t\tDe lo contrario se cancelará el registro\n\n");
 		printf("\t\t¿Ingresar otra matrícula? S/N: ");
@@ -302,7 +306,7 @@ void registro_veterinarios(FILE *&vet,char nombre[],char user[],char pass[],int 
 			goto regresar;						  //la sentencia goto
 		else{
 			printf("\n\n\t\tREGISTRO CANCELADO\n\n\t\t");
-			system("pause");
+			system("pause ->NUL");
 			opc=0;								//sino se cambiara la opcion y no se registrara el veterinario
 		}
 	}else{                 //si la funcion matricula retorna true (la matricula es valida)
@@ -376,7 +380,7 @@ void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet){
 	fwrite(&users,sizeof(usuarios),1,arc);
 	system("color 0a");
 	printf("\n\n\t\tREGISTRADO\n\n\t\t");
-	system("pause");
+	system("pause ->NUL");
 	system("color 07");
 	fclose(arc);
 	}
@@ -390,8 +394,9 @@ void lista_veterinarios(FILE *vet,int numero){ //numero xd
 	vet=fopen("Veterinarios.dat","rb");
 	if(vet==NULL){
 		system("color 0e");
+		Beep(700,300);
 		printf("\n\n\n\n\t\tNo hay veterinarios registrados en el sistema\n\n\n\t\t");
-		system("pause");	system("cls");
+		system("pause ->NUL");	system("cls");
 		system("color 07");
 	}
 	else{
@@ -409,7 +414,7 @@ void lista_veterinarios(FILE *vet,int numero){ //numero xd
 		}
 		fclose(vet);
 		printf("\n\n");
-		system("pause");
+		system("pause ->NUL");
 	}
 }
 void ordenar_ranking(FILE *&vet){
