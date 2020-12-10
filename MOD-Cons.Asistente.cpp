@@ -3,6 +3,7 @@
 #include<string.h>
 #include<windows.h>
 #include<locale.h>
+#include<conio.h>
 
 void gotoxy(int x, int y){
 	HANDLE hcon = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -51,6 +52,13 @@ void menuasist(int &op){
 		system("cls");
 	}while(op!=1 && op!=2 && op!=3 && op!=4 && op!=5);
 }
+void mensaje(){
+	Beep(700,300);
+	system("color 0e");
+	printf("\n\n\n\n\t\t\t   PRIMERO INICIE SESIÓN");
+	system("pause ->NUL");
+	system("color 07");
+}
 void opcionesasist(int &op,bool &iniciada){
 	switch(op){
 		case 1:	if(iniciada==false)
@@ -62,11 +70,20 @@ void opcionesasist(int &op,bool &iniciada){
 					system("color 07");
 				}
 			break;
-		case 2:	printf("registrar mascota\n\n");
+		case 2:	if(iniciada==false)
+				mensaje();
+				else
+				printf("registrar mascota\n\n");
 			break;
-		case 3: printf("registrar turno\n\n");
+		case 3: if(iniciada==false)
+				mensaje();
+				else
+				printf("registrar turno\n\n");
 			break;
-		case 4: printf("Listado de atencion\n\n");
+		case 4: if(iniciada==false)
+				mensaje();
+				else
+				printf("Listado de atencion\n\n");
 	}
 }
 bool comprobar_hay_asistentes(FILE* arc){
@@ -82,8 +99,8 @@ bool comprobar_hay_asistentes(FILE* arc){
 }
 void iniciar_sesion(bool &iniciada,int &op){
 	usuarios users;
-	char usuario[10],pass[32],opc[2];
-	int coinc;
+	char usuario[10],pass[32],opc[2],caracter;
+	int coinc,i;
 	
 	FILE* arch=fopen("usuarios.dat","rb");
 	if(arch==NULL){
@@ -105,13 +122,30 @@ void iniciar_sesion(bool &iniciada,int &op){
 		}
 		else{
 			do{
+				i=0;
 			rewind(arch);
 			
 			system("cls");
+			printf("\n\t\tINICIO DE SESIÓN\n\t\t---------------");
 			printf("\n\n\n\t\tUsuario: ");
 			_flushall();	gets(usuario);
 			printf("\n\t\tContraseña: ");
-			_flushall();	gets(pass);
+			
+			while(caracter=getch()){
+				if(caracter==13){
+					pass[i]= '\0';
+					break;
+				}else if(caracter==8){
+					if(i>0){
+						i--;
+						printf("\b \b");
+					}
+				}else{
+					printf("*");
+					pass[i]=caracter;
+					i++;
+				}
+			}
 			
 			fread(&users,sizeof(usuarios),1,arch);
 			while(!feof(arch) and iniciada==false){
@@ -129,12 +163,12 @@ void iniciar_sesion(bool &iniciada,int &op){
 				Beep(700,300);
 				system("color 0e");
 				printf("\n\n\t\tUsuario y/o contraseña incorrecta");
-				printf("\n\n\t\t¿Volver a ingresar? S/N: ");
+				printf("\n\n\t\t¿Volver a intentar? S/N: ");
 				_flushall();	gets(opc);	strlwr(opc);
 				system("color 07");
 			}else{
 				system("color 0a");
-				printf("\n\n\t\tBIENVENIDO: %s",users.Apellido_y_nombre);
+				printf("\n\n\t\tBievenido, %s",users.Apellido_y_nombre);
 				system("pause ->NUL");
 			}
 			}while(iniciada==false and strcmp(opc,"s")==0);
