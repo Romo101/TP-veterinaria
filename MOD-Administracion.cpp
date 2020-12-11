@@ -424,7 +424,7 @@ void ordenar_ranking(FILE *&vet){
 	vet=fopen("Veterinarios.dat","rb");
 	fread(&reg,sizeof(veterinarios),1,vet);
 	i=0;
-	
+	if(vet!=NULL){
 	while(!feof(vet)){
 		v[i]=reg;
 		i++;
@@ -453,4 +453,5 @@ void ordenar_ranking(FILE *&vet){
     } 
     
 	fclose(vet);
+	}
 }
