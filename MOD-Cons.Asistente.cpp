@@ -272,7 +272,7 @@ void registrar_mascota(int dd,int mm,int aaaa){
 	mascotas pets;
 	int d,m,a;
 	float peso;
-	char nombre[40],ape[40];
+	char nombre[40],ape[40],op;
 	FILE *arch=fopen("Archives//Mascotas.dat","a+b");
 	
 	printf("\n\t\t\tREGISTRO DE MASCOTA\n\t\t\t-------------------\n\n");
@@ -302,15 +302,24 @@ void registrar_mascota(int dd,int mm,int aaaa){
 	printf("\t\t     .Teléfono de contacto: ");
 	scanf("%d",&pets.telefono);
 	
+	printf("\n\t\t¿CONFIRMAR REGISTRO DE MASCOTA? S/N: ");
+	_flushall();
+	scanf("%c",&op);
+	
+	if(op=='s' or op=='S'){
 	strcpy(pets.nombre,nombre);			strcpy(pets.apellido,ape);
 	pets.peso=peso;
 	pets.Fecha_nacimiento.dia=d;		pets.Fecha_nacimiento.mes=m;
 	pets.Fecha_nacimiento.anio=a;
-	
 	fwrite(&pets,sizeof(mascotas),1,arch);
 	fclose(arch);
 	system("color 0a");
 	printf("\n\n\t\t     DATOS REGISTRADOS CORRECTAMENTE");
+	}else{
+		Beep(700,300);
+			system("color 0e");
+			printf("\n\n\t\t     REGISTRO CANCELADO!");
+	}
 	system("pause ->NUL");
 	system("color 07");
 }
@@ -462,7 +471,13 @@ void registrar_turno(int dd,int mm,int aaaa){
 		}
 		else{
 			system("color 0a");
-				printf("\n\tTURNO REGISTRADO CORRECTAMENTE");
+			printf("\n\tTURNO REGISTRADO");
+			turn.dni_dueno=dni;
+			turn.matricula=mat;
+			turn.atencion.dia=d;	turn.atencion.mes=m;	turn.atencion.anio=a;
+			turn.atendido=false;
+			turn.detalle_de_atencion[0]='\0';
+			fwrite(&turn,sizeof(turno),1,turnos);
 		}
 		fclose(vets);
 		fclose(pets);
