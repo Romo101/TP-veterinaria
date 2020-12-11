@@ -40,11 +40,19 @@ struct turno{
 	int dni_dueno;
 	char detalle_de_atencion[380];
 };
+struct veterinarios{
+	char Apellido_y_nombre[60];
+	int matricula;
+	int dni;
+	int telefono;
+	int atenciones;
+};
 
 void menuasist(int &op);
 void opcionesasist(int &op,bool &iniciada);
 void iniciar_sesion(bool &iniciada,int &op);
 void registrar_mascota();
+void registrar_turno();
 
 main() {
 	setlocale(LC_CTYPE, "spanish");
@@ -104,7 +112,7 @@ void opcionesasist(int &op,bool &iniciada) {
 			if(iniciada==false)
 				mensaje();
 			else
-				printf("registrar turno\n\n");
+				registrar_turno();
 			break;
 		case 4:
 			if(iniciada==false)
@@ -265,7 +273,7 @@ void registrar_mascota(){
 	int d,m,a;
 	float peso;
 	char nombre[40],ape[40];
-	FILE *arch=fopen("Macotas.dat","a+b");
+	FILE *arch=fopen("Mascotas.dat","a+b");
 	
 	printf("\n\t\t\tREGISTRO DE MASCOTA\n\t\t\t-------------------\n\n");
 	printf("\t\t     .Nombre de mascota: ");
@@ -303,4 +311,29 @@ void registrar_mascota(){
 	printf("\n\n\t\t     DATOS REGISTRADOS CORRECTAMENTE");
 	system("pause ->NUL");
 	system("color 07");
+}
+void registrar_turno(){
+	FILE *vets=fopen("Veterinarios.dat","rb");
+	FILE *turno=fopen("Turnos.dat","a+b");
+	FILE *pets=fopen("Mascotas.dat","rb");
+	
+	if(pets==NULL){
+		Beep(700,300);
+			system("color 0e");
+			printf("\n\n\n\t\tAún no hay mascótas registradas en el sistema\n\t\t");
+			printf("         no podrá registrar turnos");
+	}
+	else if(vets==NULL){
+		Beep(700,300);
+			system("color 0e");
+			printf("\n\n\n\t\tAún no hay veterinarios registrados en el sistema\n\t\t");
+			printf("         no podrá registrar el turno");
+	}
+	if(pets!=NULL and vets!=NULL){
+		fclose(vets);
+		fclose(pets);
+	}
+	system("color 07"); 
+	system("pause ->NUL");
+	fclose(turno);
 }
