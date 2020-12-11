@@ -96,7 +96,7 @@ aqui se valida que el usuario ingresado y validado no se encuentre
 en uso*/
 bool repetido(char user[10],FILE *&arc){
 	usuarios users;
-	arc=fopen("usuarios.dat","rb");	//abro el archivo usuario para leerlo
+	arc=fopen("Archives//usuarios.dat","rb");	//abro el archivo usuario para leerlo
 	
 	if(arc==NULL)
 	return false;      //si el archivo no existe entonces el usuario no podria repetirse asi que retorno false
@@ -259,7 +259,7 @@ void contra(char pass[],char user[],char nombre[],char opcion[]){
 /*funcion que valida las matriculas ingresadas en la funcion
 "void registro_veterinarios()"*/
 bool matricula(FILE *vet,int mat){
-	vet=fopen("Veterinarios.dat","rb"); 	//se abre el archivo de veterinarios con permiso de lectura
+	vet=fopen("Archives//Veterinarios.dat","rb"); 	//se abre el archivo de veterinarios con permiso de lectura
 	veterinarios vete;
 	
 	if(vet==NULL)						//si el archivo aun no existe entonces la matricula ingresada
@@ -318,7 +318,7 @@ void registro_veterinarios(FILE *&vet,char nombre[],char user[],char pass[],int 
 	vets.matricula=mat;
 	vets.atenciones=0;
 	
-	vet=fopen("Veterinarios.dat","a+b");		//se abre el archivo con permisos de lectura y escritura y conservacion de datos
+	vet=fopen("Archives//Veterinarios.dat","a+b");		//se abre el archivo con permisos de lectura y escritura y conservacion de datos
 	fwrite(&vets,sizeof(veterinarios),1,vet);	//se guardara los datos del veterinario en el archivo de veterinarios
 	fclose(vet);
 	}
@@ -373,7 +373,7 @@ void registro_usuario_y_contra(FILE *&arc,int op,FILE *&vet){
 	}
 	
 	if(op==1 or op==2){					//si la opcion 1 no cambio en la funcion registro_veterinarios o la opcion
-	arc=fopen("usuarios.dat","a+b");	//es ingresar asistentes se registraran los datos de usuario ingresados
+	arc=fopen("Archives//usuarios.dat","a+b");	//es ingresar asistentes se registraran los datos de usuario ingresados
 	strcpy(users.usuario,user);
 	strcpy(users.contrasena,password);
 	strcpy(users.Apellido_y_nombre,nombre);
@@ -391,7 +391,7 @@ void lista_veterinarios(FILE *vet,int numero){ //numero xd
 	veterinarios vets;
 	int i=3+numero; 		//se manda un numero el cual se suma a un entero que es el numero de la linea
 							//desde la que se debe empezar a imprimir los datos de los veterinarios.
-	vet=fopen("Veterinarios.dat","rb");
+	vet=fopen("Archives//Veterinarios.dat","rb");
 	if(vet==NULL){
 		system("color 0e");
 		Beep(700,300);
@@ -421,7 +421,7 @@ void ordenar_ranking(FILE *&vet){
 	veterinarios reg,v[50],aux;
 	int i,b,n;
 	
-	vet=fopen("Veterinarios.dat","rb");
+	vet=fopen("Archives//Veterinarios.dat","rb");
 	fread(&reg,sizeof(veterinarios),1,vet);
 	i=0;
 	if(vet!=NULL){
@@ -446,7 +446,7 @@ void ordenar_ranking(FILE *&vet){
     while (b==1);
     
     fclose(vet);
-    vet=fopen("Veterinarios.dat","wb");
+    vet=fopen("Archives//Veterinarios.dat","wb");
     for (i=0;i<n;i++){     
        reg=v[i];
        fwrite(&reg,sizeof(veterinarios),1,vet);           
