@@ -35,6 +35,7 @@ struct mascotas{
 	int telefono;
 };
 struct turno{
+	bool atendido;
 	int matricula;
 	fecha atencion;
 	int dni_dueno;
@@ -49,13 +50,20 @@ struct veterinarios{
 };
 
 void menuasist(int &op);
-void opcionesasist(int &op,bool &iniciada);
+void opcionesasist(int &op,bool &iniciada,int dd,int mm,int aaaa);
 void iniciar_sesion(bool &iniciada,int &op);
-void registrar_mascota();
-void registrar_turno();
+void registrar_mascota(int dd,int mm,int aaaa);
+void registrar_turno(int dd,int mm,int aaaa);
 
 main() {
 	setlocale(LC_CTYPE, "spanish");
+	int dia_actual,mes_actual,anio_actual;
+	
+	time_t t=time(NULL);
+	struct tm today = *localtime(&t);
+	mes_actual=today.tm_mon+1;
+	dia_actual=today.tm_mday;
+	anio_actual=(today.tm_year+1900);
 	
 	int op=0;
 	bool sesion_iniciada=false;
@@ -63,7 +71,7 @@ main() {
 	while(op!=5) {
 		menuasist(op);
 		if(op!=5)
-			opcionesasist(op,sesion_iniciada);
+			opcionesasist(op,sesion_iniciada,dia_actual,mes_actual,anio_actual);
 	}
 }
 void menuasist(int &op) {
@@ -90,7 +98,7 @@ void mensaje() {
 	system("pause ->NUL");
 	system("color 07");
 }
-void opcionesasist(int &op,bool &iniciada) {
+void opcionesasist(int &op,bool &iniciada,int dd,int mm,int aaaa) {
 	switch(op) {
 		case 1:
 			if(iniciada==false)
@@ -106,13 +114,13 @@ void opcionesasist(int &op,bool &iniciada) {
 			if(iniciada==false)
 				mensaje();
 			else
-				registrar_mascota();
+				registrar_mascota(dd,mm,aaaa);
 			break;
 		case 3:
 			if(iniciada==false)
 				mensaje();
 			else
-				registrar_turno();
+				registrar_turno(dd,mm,aaaa);
 			break;
 		case 4:
 			if(iniciada==false)
@@ -213,15 +221,7 @@ void iniciar_sesion(bool &iniciada,int &op) {
 		system("color 07");
 	}
 }
-void fecha_valida(char nm[],char ape[],float peso,int &d,int &m,int &a){
-	int dd,mm,aaaa;
-	
-	time_t t=time(NULL);
-	struct tm today = *localtime(&t);
-	mm=today.tm_mon+1;
-	dd=today.tm_mday;
-	aaaa=(today.tm_year+1900);
-	
+void fecha_valida(char nm[],char ape[],float peso,int &d,int &m,int &a,int dd,int mm,int aaaa){
 	bool band=false;
 	int cont;
 	do{
@@ -268,7 +268,7 @@ void fecha_valida(char nm[],char ape[],float peso,int &d,int &m,int &a){
 	}while(band==false);
 	system("cls");
 }
-void registrar_mascota(){
+void registrar_mascota(int dd,int mm,int aaaa){
 	mascotas pets;
 	int d,m,a;
 	float peso;
@@ -284,7 +284,7 @@ void registrar_mascota(){
 	gets(ape);		strupr(ape);
 	printf("\t\t     .Peso de mascota: ");
 	scanf("%f",&peso);
-	fecha_valida(nombre,ape,peso,d,m,a);
+	fecha_valida(nombre,ape,peso,d,m,a,dd,mm,aaaa);
 	
 	printf("\n\t\t\tREGISTRO DE MASCOTA\n\t\t\t-------------------\n\n");
 	printf("\t\t     .Nombre de mascota: %s",nombre);
@@ -297,6 +297,8 @@ void registrar_mascota(){
 	printf("\t\t     .Domicilio: ");
 	_flushall();
 	gets(pets.domicilio);		strupr(pets.domicilio);
+	printf("\t\t     .DNI del dueño: ");
+	scanf("%d",&pets.dni_de_dueno);
 	printf("\t\t     .Teléfono de contacto: ");
 	scanf("%d",&pets.telefono);
 	
@@ -312,27 +314,66 @@ void registrar_mascota(){
 	system("pause ->NUL");
 	system("color 07");
 }
-void registrar_turno(){
+void registrar_turno(int dd,int mm,int aaaa){
+	int dni;
+	char op[2];
+	bool registrado=false;
+	veterinarios vetes;
+	mascotas mascota;
+	turno turn;
+	
 	FILE *vets=fopen("Archives//Veterinarios.dat","rb");
-	FILE *turno=fopen("Archives//Turnos.dat","a+b");
+	FILE *turnos=fopen("Archives//Turnos.dat","a+b");
 	FILE *pets=fopen("Archives//Mascotas.dat","rb");
 	
 	if(pets==NULL){
 		Beep(700,300);
 			system("color 0e");
-			printf("\n\n\n\t\tAún no hay mascótas registradas en el sistema");
+			printf("\n\n\n\t\tAún no hay mascotas registradas en el sistema");
+			system("pause ->NUL");
 	}
 	else if(vets==NULL){
 		Beep(700,300);
 			system("color 0e");
 			printf("\n\n\n\t\tAún no hay veterinarios registrados en el sistema\n\t\t");
 			printf("         no podrá registrar el turno");
+			system("pause ->NUL");
 	}
 	if(pets!=NULL and vets!=NULL){
+		do{
+			system("cls");
+			printf("\n\t\t\t  TURNOS\n\t\t\t  ------\n\n");
+			printf("\t.DNI Del dueño de la mascota: ");
+			scanf("%d",&dni);
+			rewind(pets);
+			fread(&mascota,sizeof(mascotas),1,pets);
+			while(!feof(pets) and registrado==false){
+				if(dni==mascota.dni_de_dueno){
+					registrado= true;
+				}
+				else{
+					fread(&mascota,sizeof(mascotas),1,pets);
+				}
+			}
+			if(registrado==false){
+				Beep(700,300);
+				system("color 0e");
+				printf("\tEl DNI %d no está registrado en el sistema de datos de mascotas",dni);
+				printf("\n\n\t¿Desea ingresar nuevamente? S/N: ");
+				_flushall();	gets(op);	strlwr(op);
+				system("color 07");
+			}
+			else{
+				system("cls");
+			printf("\n\t\t\t  TURNOS\n\t\t\t  ------\n\n");
+			printf("\tDATOS DE MASCOTA:\n\n");
+			printf("\t.Nombre y Apellido: %s, %s -- Peso: %.2f Kg.\n",mascota.nombre,mascota.apellido,mascota.peso);
+			system("pause ->NUL");
+			}
+		}while(registrado==false and strcmp(op,"s")==0);
 		fclose(vets);
 		fclose(pets);
-	}
-	system("pause ->NUL");
+	}	
 	system("color 07"); 
-	fclose(turno);
+	fclose(turnos);
 }
