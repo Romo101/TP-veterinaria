@@ -315,9 +315,9 @@ void registrar_mascota(int dd,int mm,int aaaa){
 	system("color 07");
 }
 void registrar_turno(int dd,int mm,int aaaa){
-	int dni;
+	int dni,mat,d,m,a,salir=0;
 	char op[2];
-	bool registrado=false;
+	bool pasa=false;
 	veterinarios vetes;
 	mascotas mascota;
 	turno turn;
@@ -340,40 +340,134 @@ void registrar_turno(int dd,int mm,int aaaa){
 			system("pause ->NUL");
 	}
 	if(pets!=NULL and vets!=NULL){
-		do{
+		while(pasa==false && salir==0){
 			system("cls");
 			printf("\n\t\t\t  TURNOS\n\t\t\t  ------\n\n");
 			printf("\t.DNI Del dueño de la mascota: ");
 			scanf("%d",&dni);
 			rewind(pets);
 			fread(&mascota,sizeof(mascotas),1,pets);
-			while(!feof(pets) and registrado==false){
+			while(!feof(pets) and pasa==false){
 				if(dni==mascota.dni_de_dueno){
-					registrado= true;
+					pasa= true;
 				}
 				else{
 					fread(&mascota,sizeof(mascotas),1,pets);
 				}
 			}
-			if(registrado==false){
+			if(pasa==false){
 				Beep(700,300);
 				system("color 0e");
-				printf("\tEl DNI %d no está registrado en el sistema de datos de mascotas",dni);
+				printf("\n\tEl DNI %d no está registrado en el sistema de datos de mascotas",dni);
 				printf("\n\n\t¿Desea ingresar nuevamente? S/N: ");
 				_flushall();	gets(op);	strlwr(op);
 				system("color 07");
+				if(strcmp(op,"s")!=0)
+				salir++;
 			}
-			else{
-				system("cls");
+		}
+
+		pasa=false;
+		
+		while(pasa==false && salir==0){
+			system("cls");
 			printf("\n\t\t\t  TURNOS\n\t\t\t  ------\n\n");
 			printf("\tDATOS DE MASCOTA:\n\n");
 			printf("\t.Nombre y Apellido: %s, %s -- Peso: %.2f Kg.\n",mascota.nombre,mascota.apellido,mascota.peso);
-			system("pause ->NUL");
+			printf("\n\tDATOS DE VETERINARIO:\n");
+			printf("\n\t.Nro. de matrícula: ");		scanf("%d",&mat);
+			rewind(vets);
+			
+			fread(&vetes,sizeof(veterinarios),1,vets);
+			while(!feof(vets) and pasa==false){
+				if(mat==vetes.matricula){
+					pasa= true;
+				}
+				else{
+					fread(&vetes,sizeof(veterinarios),1,vets);
+				}
 			}
-		}while(registrado==false and strcmp(op,"s")==0);
+			if(pasa==false){
+				Beep(700,300);
+				system("color 0e");
+				printf("\n\tLa mátricula %d no está registrada en el sistema de veterinarios",mat);
+				printf("\n\n\t¿Desea ingresar nuevamente? S/N: ");
+				_flushall();	gets(op);	strlwr(op);
+				system("color 07");
+				if(strcmp(op,"s")!=0)
+				salir++;
+			}
+		}
+		
+		pasa=false;
+		
+		while(pasa==false && salir==0){
+			system("cls");
+			printf("\n\t\t\t  TURNOS\n\t\t\t  ------\n\n");
+			printf("\tDATOS DE MASCOTA:\n\n");
+			printf("\t.Nombre y Apellido: %s, %s -- Peso: %.2f Kg.\n",mascota.nombre,mascota.apellido,mascota.peso);
+			printf("\n\tDATOS DE VETERINARIO:\n");
+			printf("\n\t.Nro. de matrícula: %d\n",mat);
+			printf("\t.Apellido y Nombre: %s\n\t.DNI: %d\n\n",vetes.Apellido_y_nombre,vetes.dni);
+			printf("\tFECHA DE TURNO:\n\n");
+			printf("\t.Día: ");		scanf("%d",&d);
+			printf("\t.Mes: ");		scanf("%d",&m);
+			printf("\t.Año: ");		scanf("%d",&a);
+			
+			if(d<1 or d>31 or m>12 or m<1 or a<aaaa or a>9999){
+			system("color 0e");
+			Beep(700,300);
+			printf("\n\tAsegurese de ingresar un número correcto para días, mes y año");
+			system("pause ->NUL");
+			}else if(a==aaaa){
+				if(m==mm){
+					if(d<dd){
+					system("color 0e");
+					Beep(700,300);
+					printf("\n\tEl turno no puede ser anterior al día de hoy (%.2d/%.2d/%d)",dd,mm,aaaa);
+					system("pause ->NUL");
+					}
+				}
+				if(m<mm){
+				system("color 0e");
+				Beep(700,300);
+				printf("\n\tEl turno no puede ser anterior al día de hoy (%.2d/%.2d/%d)",dd,mm,aaaa);
+				system("pause ->NUL");
+				}
+			}else{
+				pasa=true;
+			}	
+			system("color 07");
+		}
+		
+		if(pasa==true){
+			system("cls");
+			printf("\n\t\t\t  TURNOS\n\t\t\t  ------\n\n");
+			printf("\tDATOS DE MASCOTA:\n\n");
+			printf("\t.Nombre y Apellido: %s, %s -- Peso: %.2f Kg.\n",mascota.nombre,mascota.apellido,mascota.peso);
+			printf("\n\tDATOS DE VETERINARIO:\n");
+			printf("\n\t.Nro. de matrícula: %d\n",mat);
+			printf("\t.Apellido y Nombre: %s\n\t.DNI: %d\n\n",vetes.Apellido_y_nombre,vetes.dni);
+			printf("\t.Fecha de turno: %.2d/%.2d%d",d,m,a);
+			printf("\n\n\t\t¿CONFIRMAR TURNO? S/N: ");
+			_flushall();	gets(op);	strlwr(op);
+			if(strcmp(op,"s")!=0)
+			salir++;
+		}
+		
+		if(salir>0){
+			Beep(700,300);
+				system("color 0e");
+				printf("\n\t¡TURNO CANCELADO!");
+		}
+		else{
+			system("color 0a");
+				printf("\n\tTURNO REGISTRADO CORRECTAMENTE");
+		}
 		fclose(vets);
 		fclose(pets);
 	}	
+	system("pause ->NUL");
 	system("color 07"); 
 	fclose(turnos);
 }
