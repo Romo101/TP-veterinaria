@@ -137,7 +137,7 @@ void iniciar_sesion(bool &iniciada,int &op) {
 	char usuario[10],pass[32],opc[2],caracter;
 	int coinc,i;
 
-	FILE* arch=fopen("usuarios.dat","rb");
+	FILE* arch=fopen("Archives//usuarios.dat","rb");
 	if(arch==NULL) {
 		Beep(700,300);
 		system("color 0e");
@@ -273,7 +273,7 @@ void registrar_mascota(){
 	int d,m,a;
 	float peso;
 	char nombre[40],ape[40];
-	FILE *arch=fopen("Mascotas.dat","a+b");
+	FILE *arch=fopen("Archives//Mascotas.dat","a+b");
 	
 	printf("\n\t\t\tREGISTRO DE MASCOTA\n\t\t\t-------------------\n\n");
 	printf("\t\t     .Nombre de mascota: ");
@@ -313,15 +313,14 @@ void registrar_mascota(){
 	system("color 07");
 }
 void registrar_turno(){
-	FILE *vets=fopen("Veterinarios.dat","rb");
-	FILE *turno=fopen("Turnos.dat","a+b");
-	FILE *pets=fopen("Mascotas.dat","rb");
+	FILE *vets=fopen("Archives//Veterinarios.dat","rb");
+	FILE *turno=fopen("Archives//Turnos.dat","a+b");
+	FILE *pets=fopen("Archives//Mascotas.dat","rb");
 	
 	if(pets==NULL){
 		Beep(700,300);
 			system("color 0e");
-			printf("\n\n\n\t\tAún no hay mascótas registradas en el sistema\n\t\t");
-			printf("         no podrá registrar turnos");
+			printf("\n\n\n\t\tAún no hay mascótas registradas en el sistema");
 	}
 	else if(vets==NULL){
 		Beep(700,300);
@@ -333,7 +332,7 @@ void registrar_turno(){
 		fclose(vets);
 		fclose(pets);
 	}
-	system("color 07"); 
 	system("pause ->NUL");
+	system("color 07"); 
 	fclose(turno);
 }
