@@ -54,6 +54,7 @@ void opcionesasist(int &op,bool &iniciada,int dd,int mm,int aaaa);
 void iniciar_sesion(bool &iniciada,int &op);
 void registrar_mascota(int dd,int mm,int aaaa);
 void registrar_turno(int dd,int mm,int aaaa);
+void listar(int dd,int mm,int aaaa);
 
 main() {
 	setlocale(LC_CTYPE, "spanish");
@@ -126,7 +127,7 @@ void opcionesasist(int &op,bool &iniciada,int dd,int mm,int aaaa) {
 			if(iniciada==false)
 				mensaje();
 			else
-				printf("Listado de atencion\n\n");
+				listar(dd,mm,aaaa);
 	}
 }
 bool comprobar_hay_asistentes(FILE* arc) {
@@ -145,7 +146,7 @@ void iniciar_sesion(bool &iniciada,int &op) {
 	char usuario[10],pass[32],opc[2],caracter;
 	int coinc,i;
 
-	FILE* arch=fopen("Archives//usuarios.dat","rb");
+	FILE* arch=fopen("usuarios.dat","rb");
 	if(arch==NULL) {
 		Beep(700,300);
 		system("color 0e");
@@ -218,8 +219,8 @@ void iniciar_sesion(bool &iniciada,int &op) {
 			} while(iniciada==false and strcmp(opc,"s")==0);
 		}
 		fclose(arch);
-		system("color 07");
 	}
+	system("color 07");
 }
 void fecha_valida(char nm[],char ape[],float peso,int &d,int &m,int &a,int dd,int mm,int aaaa){
 	bool band=false;
@@ -273,7 +274,7 @@ void registrar_mascota(int dd,int mm,int aaaa){
 	int d,m,a;
 	float peso;
 	char nombre[40],ape[40],op;
-	FILE *arch=fopen("Archives//Mascotas.dat","a+b");
+	FILE *arch=fopen("Mascotas.dat","a+b");
 	
 	printf("\n\t\t\tREGISTRO DE MASCOTA\n\t\t\t-------------------\n\n");
 	printf("\t\t     .Nombre de mascota: ");
@@ -313,6 +314,7 @@ void registrar_mascota(int dd,int mm,int aaaa){
 	pets.Fecha_nacimiento.anio=a;
 	fwrite(&pets,sizeof(mascotas),1,arch);
 	fclose(arch);
+	//pets.borrar=false; ---> verificar si haria falta
 	system("color 0a");
 	printf("\n\n\t\t     DATOS REGISTRADOS CORRECTAMENTE");
 	}else{
@@ -331,24 +333,24 @@ void registrar_turno(int dd,int mm,int aaaa){
 	mascotas mascota;
 	turno turn;
 	
-	FILE *vets=fopen("Archives//Veterinarios.dat","rb");
-	FILE *turnos=fopen("Archives//Turnos.dat","a+b");
-	FILE *pets=fopen("Archives//Mascotas.dat","rb");
+	FILE *vets=fopen("Veterinarios.dat","rb");
+	FILE *pets=fopen("Mascotas.dat","rb");
 	
 	if(pets==NULL){
 		Beep(700,300);
 			system("color 0e");
 			printf("\n\n\n\t\tAún no hay mascotas registradas en el sistema");
-			system("pause ->NUL");
 	}
 	else if(vets==NULL){
 		Beep(700,300);
 			system("color 0e");
 			printf("\n\n\n\t\tAún no hay veterinarios registrados en el sistema\n\t\t");
 			printf("         no podrá registrar el turno");
-			system("pause ->NUL");
 	}
 	if(pets!=NULL and vets!=NULL){
+		
+			FILE *turnos=fopen("Turnos.dat","a+b");
+		
 		while(pasa==false && salir==0){
 			system("cls");
 			printf("\n\t\t\t  TURNOS\n\t\t\t  ------\n\n");
@@ -481,8 +483,143 @@ void registrar_turno(int dd,int mm,int aaaa){
 		}
 		fclose(vets);
 		fclose(pets);
-	}	
+		fclose(turnos);
+	}
 	system("pause ->NUL");
 	system("color 07"); 
-	fclose(turnos);
+}
+void listar(int dd,int mm,int aaaa){
+	typedef char diagnostico[380];
+	typedef char nombre[60];
+	char op;
+	nombre mascota_nombres[20];
+	char veterinario_nombre[60];
+	bool veterinario_encontrado;
+	diagnostico diagnosticos[20];
+	FILE *turnos=fopen("Turnos.dat","rb");
+	FILE *vets=fopen("Veterinarios.dat","rb");
+	bool pasa;
+	
+	int d,m,a,i,j,n;
+	int matricula;
+	
+	if(turnos==NULL){
+		Beep(700,300);
+		system("color 0e");
+		printf("\n\n\n\t\t\tAún no se registraron turnos");
+		system("pause ->NUL");
+	}else if(vets==NULL){
+		Beep(700,300);
+		system("color 0e");
+		printf("\n\n\n\t\t\tAún no se registraron Veterinarios");
+		system("pause ->NUL");
+	}
+	if(turnos!=NULL and vets!=NULL){
+	FILE *pets=fopen("Mascotas.dat","rb");
+		turno turn;
+		veterinarios veterinario;
+		mascotas mascota;
+		
+		do{	i=0;
+		system("color 07");
+		pasa=false;
+		printf("\n\t\tFECHA A BUSCAR ATENCIONES\n\n");
+		printf("\t\tDía: ");	scanf("%d",&d);
+		printf("\t\tMes: ");	scanf("%d",&m);
+		printf("\t\tAño: ");	scanf("%d",&a);
+		if(d<1 or d>31 or m>12 or m<1 or a<aaaa-5 or a>aaaa){
+			i++;
+			system("color 0e");
+			Beep(700,300);
+			printf("\n\tAsegurese de ingresar un número correcto para días, mes y año");
+				if(a<aaaa-5)
+				printf("\n\tSe guardan solo las atenciones de los ultimos 5 años");
+				if(a>aaaa)
+				printf("\n\tEl año no puede ser posterior al año en curso (%d)",aaaa);
+			system("pause ->NUL");
+			}else if(a==aaaa){
+				if(m==mm){
+					i++;
+					if(d>dd){
+					system("color 0e");
+					Beep(700,300);
+					printf("\n\tLas atenciones no pueden ser posteriores al día de hoy (%.2d/%.2d/%d)",dd,mm,aaaa);
+					system("pause ->NUL");
+					}
+				}
+				if(m>mm){
+					i++;
+				system("color 0e");
+				Beep(700,300);
+				printf("\n\tLas atenciones no pueden ser posteriores al día de hoy (%.2d/%.2d/%d)",dd,mm,aaaa);
+				system("pause ->NUL");
+				}
+			}
+			if(i==0)
+				pasa=true;
+			system("cls");
+		}while(pasa==false);
+			
+			do{	system("cls");			system("color 07");
+				i=0,j=0;
+				veterinario_encontrado=false;
+				rewind(turnos);	rewind(vets); rewind(pets);
+			printf("\n\n\t.Fecha de atención %.2d/%.2d/%d",d,m,a);
+			printf("\n\t.Matrícula de Veterinario: ");
+			scanf("%d",&matricula);
+			
+			fread(&turn,sizeof(turno),1,turnos);
+			while(!feof(turnos)){
+				if(matricula==turn.matricula && veterinario_encontrado==false){
+					fread(&veterinario,sizeof(veterinarios),1,vets);
+					while(!feof(vets)){
+					if(matricula==veterinario.matricula){
+						veterinario_encontrado=true;
+					strcpy(veterinario_nombre,veterinario.Apellido_y_nombre);
+					}
+					fread(&veterinario,sizeof(veterinarios),1,vets);
+					}
+				}
+				if(veterinario_encontrado==false){
+				break;
+				}
+				
+			if(turn.matricula==matricula && turn.atendido==true && turn.atencion.dia==d && turn.atencion.dia==m && turn.atencion.dia==a)
+			{
+				strcpy(diagnosticos[i],turn.detalle_de_atencion);
+				i++;
+			}
+			fread(&turn,sizeof(turno),1,turnos);
+			}
+		if(veterinario_encontrado==false){
+				Beep(700,300);
+				system("color 0e");
+			printf("\n\t.La matrícula %d no está registrada en el sistema",matricula);
+			printf("\n\t ¿DESEA INGRESAR UNA DISTINTA? S/N: ");
+			_flushall(); scanf("%c",&op);
+		}else{
+			if(i==0){
+				Beep(700,300);
+				system("color 0e");
+				printf("\n\t.Veterinario: %s",veterinario_nombre);
+				printf("\n\n\tNO REGISTRA ATENCIONES EL DÍA INDICADO");
+				system("pause ->NUL");
+			}
+			else{
+				n=i-1;
+				printf("\n\t.Veterinario: %s",veterinario_nombre);
+				printf("\n\n\tREGISTRA %d ATENCIONES EL DÍA INDICADO",n);
+				printf("\n\n\tPRESIONA UNA TECLA PARA VER LOS DETALLES DE ATENCION REGISTRADOS...");
+				system("pause ->NUL");
+				for(i=0;i<n;i++){
+					system("cls");
+					printf("(%d)\n\nFECHA %.2d/%.2d/%d\nVETERINARIO: %s  ºº  MATRÍCULA %d\n\n",i+1,d,m,a,veterinario_nombre,matricula);
+					printf("DETALLE DE ATENCION: %s",diagnosticos[i]);
+					system("pause -> NUL");
+				}
+			}
+		}
+		}while(op=='s' or op=='S');
+	}
+	system("color 07");
 }
