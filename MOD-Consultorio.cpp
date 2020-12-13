@@ -53,12 +53,13 @@ struct turno{	//estructura para leer y escribir los datos del archivo de turnos
 };
 
 void menuvet(int &op);
-void opcionesvet(int &op, bool &iniciada,int d,int m,int a);
-void iniciar_sesion(bool &iniciada,int &op);
+void opcionesvet(int &op, bool &iniciada,int d,int m,int a,int &matricula,int &dni_ultimo);
+void iniciar_sesion(bool &iniciada,int &op,int &matricula);
+void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo);
 
 main(){
 	setlocale(LC_CTYPE, "spanish");
-	int op=0;
+	int op=0,dni_ultimo=0,matricula;
 	bool sesion_iniciada;
 	
 /*--estructura que capta el dia de hoy , dia, mes y año--*/
@@ -74,8 +75,15 @@ main(){
 	while(op!=4){
 		system("cls");
 		menuvet(op);
+		if(op==4 && dni_ultimo!=0){
+			Beep(700,300);
+			system("color 0e");
+			printf("\n\n\n\n\n\t\t   POR FAVOR, PRIMERO REGISTRA EL DETALLE DE LA\n\t\t\t        ULTIMA ATENCIÓN");
+			system("pause ->NUL");	system("color 07");
+			op=0;
+		}
 		if(op!=4)
-		opcionesvet(op,sesion_iniciada,dia_actual,mes_actual,anio_actual);
+		opcionesvet(op,sesion_iniciada,dia_actual,mes_actual,anio_actual,matricula,dni_ultimo);
 	}
 }
 void menuvet(int &op){
@@ -96,27 +104,26 @@ void menuvet(int &op){
 void mensaje(){
 	Beep(700,300);
 	system("color 0e");
-	printf("\n\n\n\n\n\t\t\t   PRIMERO INICIE SESION");
+	printf("\n\n\n\n\n\t\t\t     PRIMERO INICIE SESION");
 	system("pause ->NUL");
 	system("color 07");
 }
-void opcionesvet(int &op , bool &iniciada,int d,int m,int a){
+void opcionesvet(int &op, bool &iniciada,int d,int m,int a,int &matricula,int &dni_ultimo){
 	switch(op){
 		case 1:	if(iniciada==true){
 				Beep(700,300);
 				system("color 0a");
-				printf("\n\n\n\n\n\t\t\t   SESION YA INICADA");
+				printf("\n\n\n\n\n\t\t\t       SESION YA INICIADA");
 				system("pause ->NUL");
 				system("color 07");
 				}else{
-					iniciar_sesion(iniciada,op);
+					iniciar_sesion(iniciada,op,matricula);
 				}
 			break;
 		case 2:	if(iniciada==false)
 				mensaje();
 				else{
-					printf("lista de espera\n\n");
-					system("pause ->NUL");
+					lista_del_dia(d,m,a,matricula,dni_ultimo);
 				}
 			break;
 		case 3: if(iniciada==false)
@@ -139,7 +146,7 @@ bool comprobar_hay_veterinarios(FILE* arc) {
 	}
 	return false;
 }
-void iniciar_sesion(bool &iniciada,int &op) {	//inicio de sesion
+void iniciar_sesion(bool &iniciada,int &op,int &matricula) {	//inicio de sesion
 	usuarios users;
 	veterinarios veterinario;
 	char usuario[10],pass[32],opc[2],caracter;	//caracter nos ayudara para mostrar la contraseña como asteriscos
@@ -212,21 +219,77 @@ void iniciar_sesion(bool &iniciada,int &op) {	//inicio de sesion
 				} else {								//si se ingresaron validos
 				fread(&veterinario,sizeof(veterinarios),1,vets);
 				while(!feof(vets)){
-					if(users.Apellido_y_nombre==veterinario.Apellido_y_nombre){
+					if(strcmp(users.Apellido_y_nombre,veterinario.Apellido_y_nombre)==0){
+						matricula=veterinario.matricula;
 						break;
 					}
 					else{
 					fread(&veterinario,sizeof(veterinarios),1,vets);	
 					}
 				}
+					fclose(vets);
 					system("color 0a");
-					printf("\n\n\t\tBievenido veterinario, %s\n\n\t\tNro. Matrícula: %d",users.Apellido_y_nombre,veterinario.matricula);
+					printf("\n\n\t\tBievenido veterinario, %s\n\n\t\tNro. Matrícula: %d",users.Apellido_y_nombre,matricula);
 					system("pause ->NUL");
 				}
 			} while(iniciada==false and strcmp(opc,"s")==0); //mientras no haya ingresado correctamente y haya elegido volver a intentar
-			fclose(vets);
 		}
 		fclose(arch);//se cierran los archivos
+	}
+	system("color 07");
+}
+void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo){
+	FILE* turn=fopen("Turnos.dat","rb");		//esta funcion me devolvera el dni del dueño de la mascota atendida
+	
+	if(turn==NULL){
+		Beep(700,300);
+		system("color 0e");
+		printf("\n\n\n\t\t\tNO HAY TURNOS REGISTRADOS");
+		system("pause ->NUL");
+	}else if(dni_ultimo!=0){
+		Beep(700,300);
+		system("color 0e");
+		printf("\n\n\n\t\t\tPRIMERO REGISTRE EL DETALLE DE ATENCION\n\t\t\tDE LA ÚLTIMA MASCOTA ATENDIDA");
+		system("pause ->NUL");
+	}else{ 
+		int i=0,n,dni[20];
+		bool pasa;
+		printf("%.2d/%.2d/%d",d,m,a);
+		FILE* pets=fopen("Mascotas.dat","rb");
+		turno turnos;
+		mascotas mascota;
+		/*fread(&mascota,sizeof(mascotas),1,pets);{
+			if()
+		}*/
+		fread(&turnos,sizeof(turno),1,turn);
+		while(!feof(turn)){
+			if(turnos.matricula==matricula && turnos.atendido==false && turnos.atencion.dia==d && turnos.atencion.mes==m && turnos.atencion.anio==a){
+				dni[i]=turnos.dni_dueno;
+				i++;
+			}
+			fread(&turnos,sizeof(turno),1,turn);
+		}
+		fclose(turn);
+		if(i==0){
+			Beep(700,300);
+		system("color 0e");
+		printf("\n\n\n\t\t\tAÚN NO HAY TURNOS REGISTRADOS PARA EL DÍA DE HOY");
+		system("pause ->NUL");
+		}else{
+			do{
+				/*vemos el archivo de mascota ,obtenemos los datos y los listamos, una vez listados le pedimos
+				al veterinario que ingrese el número de documento del dueño, tambien nombre y apellido
+				primero vemos si el numero de documento exite en el vector de dnis si no se encuentra avisamos
+				y se dara la oportunidad de volver a ingresar los datos.
+				si el dni exite en el vector se compara los nombres y apellidos. En caso de coincidir abrimos
+				el archivo de turnos se cambia el campo de atendido. se devuelve el numero de documento del
+				dueño de la mascota atendida y se debera como paso siguiente registrar el detalle de la atencion
+				desde el menu pricipal*/
+				
+			}while(pasa==false);
+		}
+		fclose(pets);	fclose(turn);
+		system("pause ->NUL");
 	}
 	system("color 07");
 }
