@@ -55,6 +55,7 @@ void menuvet(int &op);
 void opcionesvet(int &op, bool &iniciada,int d,int m,int a,int &matricula,int &dni_ultimo);
 void iniciar_sesion(bool &iniciada,int &op,int &matricula);
 void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo);
+void detalle_atencion(int &dni_ultimo,int matricula,int d,int m,int a);
 
 main(){
 	setlocale(LC_CTYPE, "spanish");
@@ -128,8 +129,7 @@ void opcionesvet(int &op, bool &iniciada,int d,int m,int a,int &matricula,int &d
 		case 3: if(iniciada==false)
 				mensaje();
 				else{
-					printf("registrar evolucion\n\n");
-					system("pause ->NUL");
+					detalle_atencion(dni_ultimo,matricula,d,m,a);
 				}
 			break;
 	}
@@ -145,7 +145,7 @@ bool comprobar_hay_veterinarios(FILE* arc) {
 	}
 	return false;
 }
-void iniciar_sesion(bool &iniciada,int &op,int &matricula) {	//inicio de sesion
+ void iniciar_sesion(bool &iniciada,int &op,int &matricula) {	//inicio de sesion
 	usuarios users;
 	veterinarios veterinario;
 	char usuario[10],pass[32],opc[2],caracter;	//caracter nos ayudara para mostrar la contraseña como asteriscos
@@ -199,9 +199,9 @@ void iniciar_sesion(bool &iniciada,int &op,int &matricula) {	//inicio de sesion
 				fread(&users,sizeof(usuarios),1,arch);	//luego se compara la contraseña y usuario con las contraseñas y usuarios registrados
 				while(!feof(arch) and iniciada==false) {
 					coinc=0;
-					if(strcmp(usuario,users.usuario)==0)
+					if(strcmp(usuario,users.usuario)==0 && users.veterinario==true)
 						coinc++;
-					if(strcmp(pass,users.contrasena)==0) {
+					if(strcmp(pass,users.contrasena)==0 && users.veterinario==true) {
 						if(coinc>0)
 							iniciada=true;
 					}
@@ -266,7 +266,7 @@ void edad(int d_nac,int m_nac,int a_nac,int d,int m,int a){
 		
 }
 void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo){
-	FILE* turn=fopen("Turnos.dat","rb");		//esta funcion me devolvera el dni del dueño de la mascota atendida
+	FILE* turn=fopen("Turnos.dat","r+b");		//esta funcion me devolvera el dni del dueño de la mascota atendida
 	
 	if(turn==NULL){
 		Beep(700,300);
@@ -334,23 +334,22 @@ void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo){
 					
 				rewind(turn);
 				fread(&turnos,sizeof(turno),1,turn);
-				while(!feof(turn)){
+				while(!feof(turn) && pasa==false){
 					if(dni_atendido==turnos.dni_dueno){
 						rewind(pets);
 						fread(&mascota,sizeof(mascotas),1,pets);
-						while(!feof(pets)){
+						while(!feof(pets) && pasa==false){
 							if(dni_atendido==mascota.dni_de_dueno && strcmp(nombre,mascota.nombre)==0 && strcmp(apellido,mascota.apellido)==0){
 								pasa=true;
-								break;
 							}
 							fread(&mascota,sizeof(mascotas),1,pets);
 						}
 					}
 					if(pasa==true){
 							fseek(turn,-sizeof(turno),SEEK_CUR);
-							break;
-					}
+					}else{
 					fread(&turnos,sizeof(turno),1,turn);
+					}
 				}
 				if(pasa==true){
 					system("color 0a");
@@ -372,4 +371,108 @@ void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo){
 		fclose(pets);	fclose(turn);
 	}
 	system("color 07");
+}
+void detalle_atencion(int &dni_ultimo,int matricula,int d,int m,int a){
+	
+	if(dni_ultimo==0){
+		Beep(700,300);
+		system("color 0e");
+		printf("\n\n\n\n\t\tPRIMERO DEBERÁ ATENDER A UNA MASCOTA");
+		system("pause ->NUL");
+		system("color 07");
+	}else{
+	char diagnostico[380];	//se guarda el diaqnostico  mientras ingresamos caracteres
+	char caracter; //para ir ingresando
+	int maximo=380;	//maximo de caracteres
+	char nombre_de_mascota[40];
+	int i=0;	//iterador para ir asignando caracteres a la cadena
+	FILE *turn=fopen("Turnos.dat","r+b");
+	FILE *pets=fopen("Mascotas.dat","rb");
+	FILE *vets=fopen("Veterinarios.dat","r+b");
+	
+	turno turnos;
+	mascotas mascota;
+	veterinarios veterinario;
+	
+	fread(&turnos,sizeof(turno),1,turn);
+	while(!feof(turn)){
+		if(turnos.dni_dueno==dni_ultimo && turnos.atendido==true && turnos.atencion.dia==d && turnos.atencion.mes==m && turnos.atencion.anio==a){
+			fread(&mascota,sizeof(mascotas),1,pets);
+			while(!feof(pets)){
+				if(dni_ultimo==mascota.dni_de_dueno){
+					strcpy(nombre_de_mascota,mascota.nombre);
+					break;
+				}
+				fread(&mascota,sizeof(mascotas),1,pets);
+			}
+			fseek(turn,-sizeof(turno),SEEK_CUR);
+			break;
+		}
+		fread(&turnos,sizeof(turno),1,turn);
+	}
+	fclose(pets);
+	
+	Beep(700,300);
+	system("color 0a");
+	printf("\n\n\n\n\t\t\tTENDRÁ UN MÁXIMO DE 380 CARÁCTERES PARA REDACTAR EL DIAGNOSTICO");
+	system("pause ->NUL");
+	system("color 07");	system("cls");
+	
+	printf("\n.Nombre de mascota: %s\n.DNI de dueño: %d\n\n",nombre_de_mascota,dni_ultimo);
+	printf("									(%d)\n",maximo);	 
+	printf("Diagnóstico: "); 
+while(caracter=getch()) {
+	if(maximo>0){
+		if(caracter==13) {
+			diagnostico[i]= '\0';	
+			break;	
+		} else if(caracter==8) {	
+		if(i>0) {
+		i--; 
+		maximo++;
+		system("cls");
+	printf("\n.Nombre de mascota: %s\n.DNI de dueño: %d\n\n",nombre_de_mascota,dni_ultimo);
+	printf("									(%d)\n",maximo);	 
+	printf("Diagnóstico: "); 
+		printf("%s",diagnostico);
+		diagnostico[i]='\0';
+		printf("\b \b");
+		}
+		} else {
+		maximo--;
+		system("cls");
+	printf("\n.Nombre de mascota: %s\n.DNI de dueño: %d\n\n",nombre_de_mascota,dni_ultimo);
+	printf("									(%d)\n",maximo);	 
+	printf("Diagnóstico: "); 
+		diagnostico[i]=caracter;
+		diagnostico[i+1]='\0';
+		printf("%s",diagnostico);
+		i++;
+		}
+	}
+	else{
+		diagnostico[i]='\0';
+		break;
+	}
+		}
+		strcpy(turnos.detalle_de_atencion,diagnostico);
+		fwrite(&turnos,sizeof(turno),1,turn);
+		printf("\n\nDIAGNOSTICO GUARDADO!");
+		system("pause ->NUL");
+		fclose(turn);
+	dni_ultimo=0;	
+	
+	fread(&veterinario,sizeof(veterinarios),1,vets);
+	while(!feof(vets)){
+		if(matricula==veterinario.matricula){
+			fseek(vets,-sizeof(veterinarios),SEEK_CUR);
+			break;
+		}
+		fread(&veterinario,sizeof(veterinarios),1,vets);
+	}
+	
+	veterinario.atenciones+=1;
+	fwrite(&veterinario,sizeof(veterinarios),1,vets);
+	fclose(vets);
+	}
 }
