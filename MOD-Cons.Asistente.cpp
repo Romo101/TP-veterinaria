@@ -1,3 +1,12 @@
+/*
+	TRABAJO INTEGRADOR 2DO CUATRIMESTRE
+	
+	MODULO ASISTENTE
+	
+	ALUMNO: ROMO J. JONATHAN EMANUEL
+	COMISION: 1K05
+	DNI: 41374521
+*/
 #include<stdio.h>
 #include<string.h>
 #include<windows.h>
@@ -17,7 +26,6 @@ struct fecha{
 	int anio;
 };
 struct mascotas{
-	bool borrar;			//este campo me ayudara a hacer un borrado logico de las mascotas atendidas
 	char nombre[40];
 	char apellido[40];
 	char domicilio[60];
@@ -188,9 +196,9 @@ void iniciar_sesion(bool &iniciada,int &op) {	//inicio de sesion
 				fread(&users,sizeof(usuarios),1,arch);	//luego se compara la contraseña y usuario con las contraseñas y usuarios registrados
 				while(!feof(arch) and iniciada==false) {
 					coinc=0;
-					if(strcmp(usuario,users.usuario)==0)
+					if(strcmp(usuario,users.usuario)==0 && users.veterinario==false)
 						coinc++;
-					if(strcmp(pass,users.contrasena)==0) {
+					if(strcmp(pass,users.contrasena)==0 && users.veterinario==false) {
 						if(coinc>0)
 							iniciada=true;
 					}
@@ -309,8 +317,8 @@ void registrar_mascota(int dd,int mm,int aaaa){
 			else{
 			fread(&pets,sizeof(mascotas),1,arch);
 			while(!feof(arch)){
-				if(pets.dni_de_dueno==dni and pets.borrar==false){ //si el documento se registro anteriormente
-					pasa=false;									//y la mascota fue atendida se permitira volver a registrar
+				if(pets.dni_de_dueno==dni){ //si el documento se registro anteriormente
+					pasa=false;									
 					break;
 				}else{
 					pasa=true;
@@ -347,7 +355,6 @@ void registrar_mascota(int dd,int mm,int aaaa){
 	pets.Fecha_nacimiento.dia=d;		pets.Fecha_nacimiento.mes=m;
 	pets.Fecha_nacimiento.anio=a;
 	pets.dni_de_dueno=dni;
-	pets.borrar=false;
 	fwrite(&pets,sizeof(mascotas),1,arch);
 	fclose(arch);
 	system("color 0a");
@@ -449,8 +456,9 @@ void registrar_turno(int dd,int mm,int aaaa){
 		}
 		
 		pasa=false;
-		
-		while(pasa==false && salir==0){ //si no se ligio salir se ingresara la fecha del turno programado
+		int fallos;
+		while(pasa==false && salir==0){ //si no se Eligio salir se ingresara la fecha del turno programado
+			fallos=0;
 			system("cls");
 			printf("\n\t\t\t  TURNOS\n\t\t\t  ------\n\n");
 			printf("\tDATOS DE MASCOTA:\n\n");
@@ -464,6 +472,7 @@ void registrar_turno(int dd,int mm,int aaaa){
 			printf("\t.Año: ");		scanf("%d",&a);
 			/*--SE VALIDARA UNA FECHA CORRECTA EN EL FUTURO--*/
 			if(d<1 or d>31 or m>12 or m<1 or a<aaaa or a>9999){
+				fallos++;
 			system("color 0e");
 			Beep(700,300);
 			printf("\n\tAsegurese de ingresar un número correcto para días, mes y año");
@@ -471,6 +480,7 @@ void registrar_turno(int dd,int mm,int aaaa){
 			}else if(a==aaaa){
 				if(m==mm){
 					if(d<dd){
+						fallos++;
 					system("color 0e");
 					Beep(700,300);
 					printf("\n\tEl turno no puede ser anterior al día de hoy (%.2d/%.2d/%d)",dd,mm,aaaa);
@@ -478,14 +488,16 @@ void registrar_turno(int dd,int mm,int aaaa){
 					}
 				}
 				if(m<mm){
+					fallos++;
 				system("color 0e");
 				Beep(700,300);
 				printf("\n\tEl turno no puede ser anterior al día de hoy (%.2d/%.2d/%d)",dd,mm,aaaa);
 				system("pause ->NUL");
 				}
-			}else{
+			}
+			if(fallos==0)
 				pasa=true;
-			}	
+				
 			system("color 07");
 		}
 		
@@ -497,7 +509,7 @@ void registrar_turno(int dd,int mm,int aaaa){
 			printf("\n\tDATOS DE VETERINARIO:\n");
 			printf("\n\t.Nro. de matrícula: %d\n",mat);
 			printf("\t.Apellido y Nombre: %s\n\t.DNI: %d\n\n",vetes.Apellido_y_nombre,vetes.dni);
-			printf("\t.Fecha de turno: %.2d/%.2d%d",d,m,a);
+			printf("\t.Fecha de turno: %.2d/%.2d/%d",d,m,a);
 			printf("\n\n\t\t¿CONFIRMAR TURNO? S/N: ");   //una vez ingresada una fecha correcta se pedira confirmar el turno
 			_flushall();	gets(op);	strlwr(op);
 			if(strcmp(op,"s")!=0)
@@ -569,14 +581,14 @@ void listar(int dd,int mm,int aaaa){
 			Beep(700,300);
 			printf("\n\tAsegurese de ingresar un número correcto para días, mes y año");
 				if(a<aaaa-5)
-				printf("\n\tSe guardan solo las atenciones de los ultimos 5 años");
+				printf("\n\tSe guardan solo las atenciones de los ultimos 5 años"); //ESTO LO PUEDO DESARROLLAR CON MAS TIEMPO
 				if(a>aaaa)
 				printf("\n\tEl año no puede ser posterior al año en curso (%d)",aaaa);
 			system("pause ->NUL");
 			}else if(a==aaaa){
 				if(m==mm){
-					i++;
 					if(d>dd){
+						i++;
 					system("color 0e");
 					Beep(700,300);
 					printf("\n\tLas atenciones no pueden ser posteriores al día de hoy (%.2d/%.2d/%d)",dd,mm,aaaa);
@@ -624,15 +636,15 @@ SE COPIARAN LOS DATOS UTILES EN DISTINTOS ARREGLOS Y LUEGO SE PROCEDERA A MOSTRA
 				}
 /*SE COMPRUEBA SI LA MATRICULA SE ENCUENTRA EN EL ARCHIVO TURNO Y A LA VEZ SI EL TURNO FUE ATENDIDO Y SI FUE EN EL DIA
 INGRESADO*/		
-			if(turn.matricula==matricula && turn.atendido==true && turn.atencion.dia==d && turn.atencion.dia==m && turn.atencion.dia==a)
+			if(turn.matricula==matricula && turn.atendido==true && turn.atencion.dia==d && turn.atencion.mes==m && turn.atencion.anio==a)
 			{	
 				dni_de_dueno[i]=turn.dni_dueno;		//esto lo usaremos en otro ciclo para obtener los nombres de mascotas
 				strcpy(diagnosticos[i],turn.detalle_de_atencion); 
-				i++;   //CUANDO LOS DATOS CUMPEN LA CONDICION SE COPIA ELDIAGNOSTICO A UN ARREGLO DE CADENAS, TAMBIEN EL DNI DEL DUEÑO DE LA MASCOTA
+				i++;   //CUANDO LOS DATOS CUMPEN LA CONDICION SE COPIA EL DIAGNOSTICO A UN ARREGLO DE CADENAS, TAMBIEN EL DNI DEL DUEÑO DE LA MASCOTA
 			}			//se comparara estos datos luego con el archivo de mascotas para obtenet sus nombres
 			fread(&turn,sizeof(turno),1,turnos);
 			}
-			n=i-1,j=0;
+			n=i,j=0;
 			fread(&mascota,sizeof(mascotas),1,pets);	//se obtine el nombre de las mascotas
 			while(!feof(pets) && j<n){
 				if(dni_de_dueno[j]==mascota.dni_de_dueno){
@@ -664,7 +676,7 @@ INGRESADO*/
 				for(i=0;i<n;i++){
 					system("cls");
 					printf("(%d)FECHA %.2d/%.2d/%d\n\nVETERINARIO: %s  ºº  MATRÍCULA %d\n",i+1,d,m,a,veterinario_nombre,matricula);
-					printf("NOMBRE DE MASCOTA: %s\n\n",mascota_nombres[i]);
+					printf("NOMBRE DE MASCOTA: %s\nDNI DEL DUEÑO: %d\n\n",mascota_nombres[i],dni_de_dueno[i]);
 					printf("DETALLE DE ATENCION: %s",diagnosticos[i]);
 					system("pause -> NUL");
 				}
