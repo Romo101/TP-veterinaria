@@ -34,7 +34,6 @@ struct fecha{
 	int anio;
 };
 struct mascotas{
-	bool borrar;			//este campo me ayudara a hacer un borrado logico de las mascotas atendidas
 	char nombre[40];
 	char apellido[40];
 	char domicilio[60];
@@ -238,6 +237,34 @@ void iniciar_sesion(bool &iniciada,int &op,int &matricula) {	//inicio de sesion
 	}
 	system("color 07");
 }
+void edad(int d_nac,int m_nac,int a_nac,int d,int m,int a){
+		int meses,anios,dias;
+		anios=a-a_nac;
+		meses=0;
+		dias=0;
+		
+		printf("º .EDAD: ");
+			if(m_nac!=m){
+			if(m<m_nac){
+				anios-=1;
+				meses=12-(m_nac-m);
+			}
+			if(m>m_nac){
+				meses=m-m_nac;
+			}
+			}
+			else if(m_nac==m){
+				dias=d-d_nac;
+			}
+		if(anios>0){
+			printf("%d años.",anios);
+		}
+		if(meses==0)
+			printf(" %d días.",dias);
+		else
+			printf(" %d meses",meses);
+		
+}
 void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo){
 	FILE* turn=fopen("Turnos.dat","rb");		//esta funcion me devolvera el dni del dueño de la mascota atendida
 	
@@ -258,9 +285,7 @@ void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo){
 		FILE* pets=fopen("Mascotas.dat","rb");
 		turno turnos;
 		mascotas mascota;
-		/*fread(&mascota,sizeof(mascotas),1,pets);{
-			if()
-		}*/
+		
 		fread(&turnos,sizeof(turno),1,turn);
 		while(!feof(turn)){
 			if(turnos.matricula==matricula && turnos.atendido==false && turnos.atencion.dia==d && turnos.atencion.mes==m && turnos.atencion.anio==a){
@@ -269,27 +294,82 @@ void lista_del_dia(int d,int m,int a,int matricula,int &dni_ultimo){
 			}
 			fread(&turnos,sizeof(turno),1,turn);
 		}
-		fclose(turn);
 		if(i==0){
 			Beep(700,300);
 		system("color 0e");
-		printf("\n\n\n\t\t\tAÚN NO HAY TURNOS REGISTRADOS PARA EL DÍA DE HOY");
+		printf("\n\n\n\t\t  AÚN NO HAY TURNOS REGISTRADOS PARA EL DÍA DE HOY");
 		system("pause ->NUL");
 		}else{
-			do{
-				/*vemos el archivo de mascota ,obtenemos los datos y los listamos, una vez listados le pedimos
-				al veterinario que ingrese el número de documento del dueño, tambien nombre y apellido
-				primero vemos si el numero de documento exite en el vector de dnis si no se encuentra avisamos
-				y se dara la oportunidad de volver a ingresar los datos.
-				si el dni exite en el vector se compara los nombres y apellidos. En caso de coincidir abrimos
-				el archivo de turnos se cambia el campo de atendido. se devuelve el numero de documento del
-				dueño de la mascota atendida y se debera como paso siguiente registrar el detalle de la atencion
-				desde el menu pricipal*/
-				
-			}while(pasa==false);
+			n=i,i=0;
+			char nombre[40],apellido[40],op;
+			bool pasa;
+			int di,me,an,dni_atendido;
+			do{	pasa=false, op='n', i=0;
+				system("cls");
+				while(i<n){
+				rewind(pets);
+				fread(&mascota,sizeof(mascotas),1,pets);
+				while(!feof(pets)){
+					if(dni[i]==mascota.dni_de_dueno){
+						printf("(%d)\nº .Nombre de mascota: %s\n",i+1,mascota.nombre);
+						printf("º .Apellido de dueño: %s\nº .Peso de mascota: %.2f Kg.\n",mascota.apellido,mascota.peso);
+						di=mascota.Fecha_nacimiento.dia;	me=mascota.Fecha_nacimiento.mes;
+						an=mascota.Fecha_nacimiento.anio;
+						edad(di,me,an,d,m,a);
+						printf("\nº .DNI de dueño: %d",mascota.dni_de_dueno);
+						printf("\nº .Localidad: %s\n\n",mascota.localidad);
+						break;
+					}
+					fread(&mascota,sizeof(mascotas),1,pets);
+				}
+				i++;
+				}
+				printf("LLAMAR MASCOTA: \n\n");
+				printf("Nombre de la mascota: ");
+				_flushall();	gets(nombre); 	strupr(nombre);
+				printf("Apellido: ");
+				_flushall();	gets(apellido);	strupr(apellido);
+				printf("DNI de dueño: ");
+					scanf("%d",&dni_atendido);
+					
+				rewind(turn);
+				fread(&turnos,sizeof(turno),1,turn);
+				while(!feof(turn)){
+					if(dni_atendido==turnos.dni_dueno){
+						rewind(pets);
+						fread(&mascota,sizeof(mascotas),1,pets);
+						while(!feof(pets)){
+							if(dni_atendido==mascota.dni_de_dueno && strcmp(nombre,mascota.nombre)==0 && strcmp(apellido,mascota.apellido)==0){
+								pasa=true;
+								break;
+							}
+							fread(&mascota,sizeof(mascotas),1,pets);
+						}
+					}
+					if(pasa==true){
+							fseek(turn,-sizeof(turno),SEEK_CUR);
+							break;
+					}
+					fread(&turnos,sizeof(turno),1,turn);
+				}
+				if(pasa==true){
+					system("color 0a");
+					printf("\nMASCOTA LLAMADA");
+					turnos.atendido=true;
+					fwrite(&turnos,sizeof(turno),1,turn);
+					dni_ultimo=dni_atendido;
+					system("pause ->NUL");
+				}else{
+					Beep(700,300);
+					system("color 0e");
+					printf("\nLA MASCOTA NO ESTÁ EN LA LISTA");
+					printf("\n¿Volver a ingresar? S/N: ");
+					_flushall();	scanf("%c",&op);
+					system("color 07");
+				}
+			}while(op=='s' or op=='S');
 		}
 		fclose(pets);	fclose(turn);
-		system("pause ->NUL");
 	}
 	system("color 07");
 }
